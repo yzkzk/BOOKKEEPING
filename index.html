@@ -591,12 +591,110 @@ header .sub {
 .qnav-toggle[aria-expanded="true"] .qnav-toggle-arrow { transform: rotate(90deg); }
 .qnav-body { border-top: 1px solid var(--rule); padding: 12px 16px 14px; }
 
+
+/* ── ABOUT BUTTON ── */
+.about-bar {
+  text-align: right;
+  padding: 8px 4px 0;
+  margin-bottom: -8px;
+}
+.about-btn {
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  color: var(--muted);
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: .3px;
+}
+.about-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+
+/* ── ABOUT MODAL ── */
+.about-modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(26,28,35,.6); z-index: 200000;
+  align-items: flex-start; justify-content: center;
+  overflow-y: auto;
+  padding: 24px 16px 40px;
+  backdrop-filter: blur(3px);
+}
+.about-modal-bg.show { display: flex; }
+.about-modal {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 32px 28px 28px;
+  max-width: 560px;
+  width: 100%;
+  margin: auto;
+  box-shadow: 0 12px 40px rgba(26,28,35,.2);
+  animation: fadeInUp .22s ease;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.about-modal h2 {
+  font-family: 'Kaisei Opti', serif;
+  font-size: 20px;
+  color: var(--accent);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--paper3);
+}
+.about-section {
+  margin-bottom: 20px;
+}
+.about-section h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink2);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.about-section p, .about-section li {
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--muted);
+}
+.about-section ul {
+  padding-left: 1.4em;
+  margin-top: 4px;
+}
+.about-section li { margin-bottom: 4px; }
+.about-disclaimer {
+  background: var(--red-lt);
+  border: 1px solid #e8a9a9;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 12px;
+  line-height: 1.75;
+  color: #7a3030;
+}
+.about-close {
+  width: 100%;
+  margin-top: 20px;
+}
+@media (max-width: 600px) {
+  .about-modal { padding: 24px 18px 22px; }
+  .about-modal h2 { font-size: 17px; }
+}
+
 </style>
 </head>
 <body>
 <div id="app">
 
   <!-- HEADER -->
+  <div class="about-bar">
+    <button class="about-btn" onclick="openAbout()">このサイトについて</button>
+  </div>
+
   <header>
     <div class="header-eyebrow">BOOKKEEPING LV.2 — INDUSTRIAL ACCOUNTING</div>
     <h1>工業簿記<br>仕訳トレーニング</h1>
@@ -723,6 +821,50 @@ header .sub {
   </div>
 
 </div><!-- /#app -->
+
+
+<!-- ABOUT MODAL -->
+<div class="about-modal-bg" id="about-modal" onclick="if(event.target===this)closeAbout()">
+  <div class="about-modal">
+    <h2>📖 このサイトについて</h2>
+
+    <div class="about-section">
+      <h3>🎯 サイトの目的</h3>
+      <p>本サイトは、<strong>日本商工会議所 簿記検定2級「工業簿記」</strong>の仕訳問題を繰り返し練習するためのトレーニングツールです。Lv.1〜Lv.10 の難易度別に全200問を収録しており、勘定科目・金額をプルダウンで選択して採点できます。</p>
+    </div>
+
+    <div class="about-section">
+      <h3>📚 収録内容</h3>
+      <ul>
+        <li>難易度 Lv.1〜Lv.10、各20問 × 計200問</li>
+        <li>カテゴリー：材料費・労務費・経費 ／ 製造間接費の配賦 ／ 仕掛品・製品の仕訳 ／ 原価差異分析 ／ 工程別・組別・等級別原価計算</li>
+        <li>勘定科目・金額ともに選択式（各行最大4行まで）</li>
+      </ul>
+    </div>
+
+    <div class="about-section">
+      <h3>🖥️ 使い方</h3>
+      <ul>
+        <li><strong>難易度・カテゴリーの絞り込み：</strong>画面上部のフィルターで練習したい範囲を選択できます。</li>
+        <li><strong>問題を解く：</strong>借方・貸方の勘定科目と金額をプルダウンから選び、「採点する」を押してください。</li>
+        <li><strong>ヒント：</strong>「💡 ヒント」ボタンで解答のヒントを表示できます。</li>
+        <li><strong>答えを見る：</strong>「答えを見る」を押すと正解と解説が表示されます（不正解扱いになります）。</li>
+        <li><strong>問題一覧：</strong>「📋 問題一覧」を展開すると、正解（緑）・不正解（赤）の状況を一覧で確認しながら問題を選択できます。</li>
+        <li><strong>セーブ／ロード：</strong>「📊 成績」ボタンからセーブ文字列を生成・保存することで、次回ページを開いたときに進捗を復元できます。</li>
+        <li><strong>金額が 0 円の行：</strong>勘定科目は何を選んでも正解として扱われます。</li>
+      </ul>
+    </div>
+
+    <div class="about-section">
+      <h3>⚠️ 免責事項</h3>
+      <div class="about-disclaimer">
+        本サイトは個人がAI（Claude）を活用して作成した非公式の学習ツールです。問題の内容・解説・正解については正確性を期していますが、誤りが含まれる可能性があります。本サイトの利用によって生じたいかなる損害についても、作成者は一切の責任を負いません。試験対策には公式テキスト・問題集を必ず併用してください。
+      </div>
+    </div>
+
+    <button class="btn btn-primary about-close" onclick="closeAbout()">閉じる</button>
+  </div>
+</div>
 
 <!-- SCORE MODAL -->
 <div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
@@ -1372,6 +1514,19 @@ function doLoad() {
   } catch(e) {
     document.getElementById('save-msg').textContent = '❌ 無効なセーブデータです。文字列を確認してください。';
   }
+}
+
+
+// ================================================================
+// ABOUT MODAL
+// ================================================================
+function openAbout() {
+  document.getElementById('about-modal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeAbout() {
+  document.getElementById('about-modal').classList.remove('show');
+  document.body.style.overflow = '';
 }
 
 </script>

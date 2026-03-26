@@ -297,7 +297,7 @@ header .sub {
 .jtable select:disabled { cursor: default; opacity: 1; }
 
 /* ── BUTTONS ── */
-.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; position: relative; z-index: 100; background: #fff; padding-top: 4px; }
 .btn {
   padding: 9px 22px;
   border-radius: 6px;
@@ -397,7 +397,7 @@ header .sub {
 .modal p { font-size: 13px; color: var(--muted); line-height: 1.8; margin-bottom: 20px; }
 
 /* ── BOTTOM CONTROLS ── */
-.bottom-ctrl { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+.bottom-ctrl { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; position: relative; z-index: 100; }
 
 /* ── EMPTY STATE ── */
 .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
@@ -527,14 +527,14 @@ header .sub {
   position: fixed;   /* viewport-relative — never clipped by overflow */
   min-width: 160px;
   max-width: 92vw;
-  max-height: min(260px, 40vh);
+  max-height: 260px; /* JS の positionCdd が動的に上書きする */
   overflow-y: auto;
   background: #fff;
   border: 1px solid var(--rule);
   border-top: 2px solid var(--accent);
   border-radius: 0 0 8px 8px;
   box-shadow: 0 8px 28px rgba(26,28,35,.22);
-  z-index: 9999;
+  z-index: 99999;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
@@ -969,29 +969,31 @@ function toggleCdd(wrap) {
 }
 
 function positionCdd(list, trigger) {
-  const r   = trigger.getBoundingClientRect();
-  const vw  = window.innerWidth;
-  const vh  = window.innerHeight;
+  const r  = trigger.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
 
-  // Always open below trigger
-  let top  = r.bottom + 2;
-  let left = r.left;
-  let w    = Math.max(r.width, 160);
+  // 常に下方向に開く
+  const top  = r.bottom + 2;
+  let   left = r.left;
+  let   w    = Math.max(r.width, 160);
 
-  // Don't overflow right edge
+  // 右端・左端のはみ出し補正
   if (left + w > vw - 8) left = vw - w - 8;
-  // Don't overflow left edge
-  if (left < 8) left = 8;
+  if (left < 8)           left = 8;
 
-  // If not enough space below, open above instead
-  const maxH = Math.min(260, vh * 0.4);
-  if (top + maxH > vh - 8 && r.top > maxH) {
-    top = r.top - maxH - 2;
-  }
+  // 高さ: 画面下端まで最大限使う（ボタンには被せない）
+  // ただしボタン群は z-index で上に来るので視覚的には重ならない。
+  // メニュー自体は vh の 60% を上限にして十分な長さを確保する。
+  const maxH = Math.min(
+    vh * 0.60,          // 画面高さの 60% を上限
+    vh - top - 12       // 画面下端から 12px 余白
+  );
 
-  list.style.top   = top  + 'px';
-  list.style.left  = left + 'px';
-  list.style.width = w    + 'px';
+  list.style.top       = top  + 'px';
+  list.style.left      = left + 'px';
+  list.style.width     = w    + 'px';
+  list.style.maxHeight = Math.max(160, maxH) + 'px'; // 最低 160px
 }
 
 // Reposition on scroll/resize while open

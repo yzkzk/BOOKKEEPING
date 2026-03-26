@@ -209,7 +209,7 @@ header .sub {
   margin-bottom: 18px;
   box-shadow: 0 2px 8px var(--shadow);
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden を削除: iOSでposition:fixedの子要素が隠れる原因のため */
   animation: fadein .25s ease;
 }
 @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -1017,6 +1017,8 @@ function getQ(idx) {
 // TABLE BUILD
 // =====================================================================
 function buildTable(q) {
+  // 古い portal list (body直下) をクリーンアップ
+  document.querySelectorAll('.cdd-list').forEach(l => l.remove());
   const tbody = document.getElementById('jtbody');
   tbody.innerHTML = '';
   const nRows = Math.min(Math.max(q.rows.length, 2), 4);
@@ -1085,26 +1087,38 @@ function makeCdd(id, items, isAmt) {
     list.appendChild(opt);
   });
 
+  // portal ID で wrap と list を紐付ける
+  const portalId = 'cdd-portal-' + id;
+  list.dataset.portalId = portalId;
+  list.dataset.wrapperId = id;  // trigger の id = wrap の data-id
+  wrap.dataset.portalId = portalId;
+
   trigger.addEventListener('click', (e) => {
     e.stopPropagation();
     toggleCdd(wrap);
   });
 
   wrap.appendChild(trigger);
-  wrap.appendChild(list);
+  // list は body 直下に portal として追加（overflow/transform の影響を受けない）
+  document.body.appendChild(list);
   return wrap;
 }
 
+function getPortalList(wrap) {
+  const pid = wrap.dataset.portalId;
+  return pid ? document.querySelector(`.cdd-list[data-portal-id="${pid}"]`) : null;
+}
+
 function toggleCdd(wrap) {
-  const list    = wrap.querySelector('.cdd-list');
+  const list    = getPortalList(wrap);
   const trigger = wrap.querySelector('.cdd-trigger');
+  if (!list || !trigger) return;
   const isOpen  = list.classList.contains('open');
-  closeAllCdds(); // close others first
+  closeAllCdds();
   if (!isOpen) {
     positionCdd(list, trigger);
     list.classList.add('open');
     trigger.setAttribute('aria-expanded', 'true');
-    // scroll selected into view
     const sel = list.querySelector('.selected');
     if (sel) sel.scrollIntoView({ block: 'nearest' });
   }
@@ -1141,7 +1155,9 @@ function positionCdd(list, trigger) {
 // Reposition on scroll/resize while open
 function onScrollResize() {
   document.querySelectorAll('.cdd-list.open').forEach(list => {
-    const trigger = list.closest('.cdd-wrap').querySelector('.cdd-trigger');
+    // portal: parentElement は body なので data-wrapper-id でトリガーを特定
+    const wrapperId = list.dataset.wrapperId;
+    const trigger = wrapperId ? document.getElementById(wrapperId) : null;
     if (trigger) positionCdd(list, trigger);
   });
 }
@@ -1149,29 +1165,31 @@ window.addEventListener('scroll', onScrollResize, { passive: true });
 window.addEventListener('resize', onScrollResize, { passive: true });
 
 function closeCdd(wrap) {
-  const list = wrap.querySelector('.cdd-list');
+  const list    = getPortalList(wrap);
   const trigger = wrap.querySelector('.cdd-trigger');
-  list.classList.remove('open');
-  trigger.setAttribute('aria-expanded', 'false');
+  if (list)    list.classList.remove('open');
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
 }
 
 function closeAllCdds() {
   document.querySelectorAll('.cdd-list.open').forEach(l => {
     l.classList.remove('open');
-    const t = l.parentElement.querySelector('.cdd-trigger');
-    if (t) t.setAttribute('aria-expanded', 'false');
+    // portal: 親は body なので data-wrapper-id でトリガーを特定
+    const wrapperId = l.dataset.wrapperId;
+    const trigger = wrapperId ? document.getElementById(wrapperId) : null;
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
   });
 }
 
 function selectCddOpt(wrap, opt) {
-  const val = opt.dataset.val;
+  const val     = opt.dataset.val;
   const trigger = wrap.querySelector('.cdd-trigger');
-  wrap.dataset.value = val;
+  const list    = getPortalList(wrap);
+  wrap.dataset.value    = val;
   trigger.dataset.value = val;
-  trigger.textContent = opt.textContent;
+  trigger.textContent   = opt.textContent;
   trigger.classList.add('has-value');
-  // mark selected
-  wrap.querySelectorAll('.cdd-opt').forEach(o => o.classList.remove('selected'));
+  if (list) list.querySelectorAll('.cdd-opt').forEach(o => o.classList.remove('selected'));
   opt.classList.add('selected');
   closeCdd(wrap);
 }

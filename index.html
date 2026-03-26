@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>簿記2級 工業簿記 仕訳トレーニング</title>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+Opti:wght@400;700&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --ink:       #1a1c23;
+  --ink2:      #2e3140;
+  --paper:     #f5f2eb;
+  --paper2:    #ede9df;
+  --paper3:    #e4dfd2;
+  --rule:      #ccc8bc;
+  --accent:    #1a4fa0;
+  --accent-lt: #e8eef8;
+  --gold:      #b07c10;
+  --gold-lt:   #fdf4e3;
+  --green:     #1a6e42;
+  --green-lt:  #e6f4ed;
+  --red:       #9b1c1c;
+  --red-lt:    #fdeaea;
+  --muted:     #7a7668;
+  --shadow:    rgba(26,28,35,.12);
+}
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ── TEXTURE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(180,170,150,.13) 27px, rgba(180,170,150,.13) 28px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ── LAYOUT ── */
+#app { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 28px 20px 60px; }
+
+/* ── HEADER ── */
+header {
+  text-align: center;
+  padding: 44px 0 32px;
+  border-bottom: 2px solid var(--rule);
+  margin-bottom: 32px;
+}
+.header-eyebrow {
+  display: inline-block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--muted);
+  text-transform: uppercase;
+  border: 1px solid var(--rule);
+  padding: 4px 12px;
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+h1 {
+  font-family: 'Kaisei Opti', serif;
+  font-size: clamp(22px, 4.5vw, 34px);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: .03em;
+  line-height: 1.25;
+}
+header .sub {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: .5px;
+}
+
+/* ── SCOREBOARD ── */
+.scoreboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.score-cell {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 12px 10px;
+  text-align: center;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+.score-cell .num {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+.score-cell .lbl {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+
+/* ── FILTER PANEL ── */
+.filter-panel {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 4px var(--shadow);
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.filter-group { flex: 1; min-width: 200px; }
+.filter-group > span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: 'Share Tech Mono', monospace;
+}
+.chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  padding: 4px 11px;
+  border-radius: 20px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  white-space: nowrap;
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+.chip.cat-on { background: var(--gold); border-color: var(--gold); color: #fff; font-weight: 500; }
+
+/* ── QUESTION NAV ── */
+.qnav-wrap {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+.qnav-label {
+  font-size: 10px; letter-spacing: 2px; color: var(--muted);
+  text-transform: uppercase; font-family: 'Share Tech Mono', monospace;
+  margin-bottom: 10px;
+}
+.qnav-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+.qnav-btn {
+  width: 38px; height: 28px;
+  border-radius: 4px;
+  border: 1px solid var(--rule);
+  background: var(--paper2);
+  color: var(--muted);
+  font-size: 10px;
+  cursor: pointer;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all .12s;
+  display: flex; align-items: center; justify-content: center;
+}
+.qnav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.qnav-btn.active { border-color: var(--accent); background: var(--accent-lt); color: var(--accent); font-weight: 700; }
+.qnav-btn.ok { background: var(--green-lt); border-color: var(--green); color: var(--green); }
+.qnav-btn.ng { background: var(--red-lt); border-color: var(--red); color: var(--red); }
+
+/* ── PROGRESS BAR ── */
+.prog-track { height: 3px; background: var(--paper3); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #4a7fd4); transition: width .4s ease; }
+
+/* ── QUESTION CARD ── */
+.qcard {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 30px 28px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 8px var(--shadow);
+  position: relative;
+  overflow: hidden;
+  animation: fadein .25s ease;
+}
+@keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.qcard-top-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--accent) 0%, #4a7fd4 60%, var(--gold) 100%);
+}
+
+.qmeta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+.qid { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted); }
+.lv-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 20px;
+  border: 1px solid currentColor;
+}
+.cat-badge {
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 4px;
+  background: var(--gold-lt);
+  color: var(--gold);
+  border: 1px solid #dbb84a55;
+}
+
+.qtext {
+  font-family: 'Kaisei Opti', serif;
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--ink);
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+}
+.hint-box {
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--paper2);
+  border-left: 3px solid var(--gold);
+  padding: 8px 14px;
+  border-radius: 0 5px 5px 0;
+  margin-bottom: 20px;
+  display: none;
+}
+
+/* ── JOURNAL TABLE ── */
+.ans-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace; margin-bottom: 8px; }
+.jtable { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+.jtable th {
+  background: var(--paper2);
+  border: 1px solid var(--rule);
+  padding: 7px 10px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: .5px;
+}
+.jtable td { border: 1px solid var(--rule); padding: 3px; }
+.jtable select {
+  width: 100%;
+  background: var(--paper);
+  border: none;
+  color: var(--ink2);
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 13px;
+  padding: 7px 24px 7px 8px;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  cursor: pointer; outline: none; transition: background .15s;
+}
+.jtable select:focus { background-color: var(--accent-lt); }
+.jtable select option { background: #fff; }
+.jtable td:nth-child(2) select,
+.jtable td:nth-child(4) select {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--gold);
+  font-size: 12px;
+}
+.jtable select.ok { background-color: var(--green-lt); color: var(--green); }
+.jtable select.ng { background-color: var(--red-lt); color: var(--red); }
+.jtable select:disabled { cursor: default; opacity: 1; }
+
+/* ── BUTTONS ── */
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  padding: 9px 22px;
+  border-radius: 6px;
+  border: none;
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: .3px;
+}
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 6px rgba(26,79,160,.25); }
+.btn-primary:hover:not(:disabled) { background: #163d82; transform: translateY(-1px); }
+.btn-score { background: var(--gold); color: #fff; box-shadow: 0 2px 6px rgba(176,124,16,.25); }
+.btn-score:hover:not(:disabled) { background: #8f6310; transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--rule); }
+.btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+
+/* ── RESULT BOX ── */
+.result-box {
+  border-radius: 8px;
+  padding: 20px 22px;
+  margin-top: 16px;
+  display: none;
+  animation: fadein .2s ease;
+}
+.result-box.ok-box { background: var(--green-lt); border: 1px solid #8ecfad; }
+.result-box.ng-box { background: var(--red-lt); border: 1px solid #e8a9a9; }
+.result-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.result-title.ok { color: var(--green); }
+.result-title.ng { color: var(--red); }
+
+.ans-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 14px; }
+.ans-table th { background: rgba(255,255,255,.6); border: 1px solid var(--rule); padding: 6px 10px; text-align: center; font-size: 11px; color: var(--muted); }
+.ans-table td { border: 1px solid var(--rule); padding: 8px 12px; text-align: center; color: var(--ink); }
+.ans-table .amt { font-family: 'Share Tech Mono', monospace; color: var(--gold); }
+
+.explanation {
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--muted);
+  border-top: 1px solid var(--rule);
+  padding-top: 12px;
+  margin-top: 12px;
+  white-space: pre-wrap;
+}
+.explanation strong { color: var(--accent); }
+
+/* ── LOADING STATE ── */
+.loading-overlay {
+  display: none; position: absolute; inset: 0;
+  background: rgba(245,242,235,.88);
+  border-radius: 10px; z-index: 10;
+  align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+}
+.loading-overlay.show { display: flex; }
+.spinner {
+  width: 30px; height: 30px;
+  border: 2px solid var(--rule); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-txt { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+
+/* ── ERROR STATE ── */
+.error-card {
+  background: var(--red-lt); border: 1px solid #e8a9a9;
+  border-radius: 8px; padding: 24px 28px; text-align: center;
+  display: none;
+}
+.error-card h3 { color: var(--red); margin-bottom: 8px; font-size: 16px; }
+.error-card p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+.error-card code {
+  display: inline-block; margin-top: 8px;
+  background: rgba(155,28,28,.08); padding: 4px 10px;
+  border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-size: 12px;
+}
+
+/* ── MODAL ── */
+.modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(26,28,35,.55); z-index: 100;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.modal-bg.show { display: flex; }
+.modal {
+  background: #fff; border: 1px solid var(--rule);
+  border-radius: 12px; padding: 40px;
+  max-width: 400px; width: 90%;
+  text-align: center; box-shadow: 0 8px 32px var(--shadow);
+  animation: fadein .2s ease;
+}
+.modal h2 { font-family: 'Kaisei Opti', serif; font-size: 22px; color: var(--accent); margin-bottom: 6px; }
+.modal .big-num { font-family: 'Share Tech Mono', monospace; font-size: 56px; color: var(--accent); margin: 12px 0; line-height: 1; }
+.modal p { font-size: 13px; color: var(--muted); line-height: 1.8; margin-bottom: 20px; }
+
+/* ── BOTTOM CONTROLS ── */
+.bottom-ctrl { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+.empty .ico { font-size: 40px; margin-bottom: 12px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 580px) {
+  .scoreboard { grid-template-columns: repeat(2, 1fr); }
+  .qcard { padding: 20px 16px; }
+  .filter-panel { gap: 14px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-eyebrow">BOOKKEEPING LV.2 — INDUSTRIAL ACCOUNTING</div>
+    <h1>工業簿記<br>仕訳トレーニング</h1>
+    <p class="sub" id="db-status">問題データ内蔵版 — ファイル不要でそのまま使えます</p>
+  </header>
+
+  <!-- SCOREBOARD -->
+  <div class="scoreboard">
+    <div class="score-cell"><div class="num" id="s-total">0</div><div class="lbl">回答数</div></div>
+    <div class="score-cell"><div class="num" id="s-correct" style="color:var(--green)">0</div><div class="lbl">正解数</div></div>
+    <div class="score-cell"><div class="num" id="s-rate" style="color:var(--gold)">—</div><div class="lbl">正答率</div></div>
+    <div class="score-cell"><div class="num" id="s-streak" style="color:var(--accent)">0</div><div class="lbl">連続正解</div></div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-panel">
+    <div class="filter-group">
+      <span>難易度</span>
+      <div class="chip-row" id="diff-chips">
+        <button class="chip on" data-d="all">すべて</button>
+        <button class="chip" data-d="1">Lv.1</button>
+        <button class="chip" data-d="2">Lv.2</button>
+        <button class="chip" data-d="3">Lv.3</button>
+        <button class="chip" data-d="4">Lv.4</button>
+        <button class="chip" data-d="5">Lv.5</button>
+        <button class="chip" data-d="6">Lv.6</button>
+        <button class="chip" data-d="7">Lv.7</button>
+        <button class="chip" data-d="8">Lv.8</button>
+        <button class="chip" data-d="9">Lv.9</button>
+        <button class="chip" data-d="10">Lv.10</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span>カテゴリー</span>
+      <div class="chip-row" id="cat-chips">
+        <button class="chip cat-on" data-c="all">すべて</button>
+        <button class="chip" data-c="material">材料費・労務費・経費</button>
+        <button class="chip" data-c="overhead">製造間接費</button>
+        <button class="chip" data-c="wip">仕掛品・製品</button>
+        <button class="chip" data-c="variance">原価差異分析</button>
+        <button class="chip" data-c="process">工程別・組別・等級別</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUESTION NAV -->
+  <div class="qnav-wrap" id="qnav-wrap" style="display:none">
+    <div class="qnav-label">問題一覧 — クリックでジャンプ</div>
+    <div class="qnav-grid" id="qnav-grid"></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+
+  <!-- ERROR STATE -->
+  <div class="error-card" id="error-card">
+    <h3>⚠ データの読み込みに失敗しました</h3>
+    <p>
+      <code>boki2_questions.json</code> が同じフォルダに存在するか確認してください。<br>
+      ローカルで開く場合は簡易サーバー（Live Server 等）が必要です。
+    </p>
+    <p style="margin-top:12px">
+      <code>python3 -m http.server 8080</code>
+    </p>
+  </div>
+
+  <!-- QUESTION CARD -->
+  <div class="qcard" id="qcard" style="display:none">
+    <div class="qcard-top-bar"></div>
+    <div class="loading-overlay" id="loading"><div class="spinner"></div><div class="loading-txt">読み込み中…</div></div>
+
+    <div class="qmeta">
+      <span class="qid" id="qid">—</span>
+      <span class="lv-badge" id="lv-badge">Lv.—</span>
+      <span class="cat-badge" id="cat-badge">—</span>
+    </div>
+
+    <div class="qtext" id="qtext"></div>
+    <div class="hint-box" id="hint-box"></div>
+
+    <div id="answer-area" style="display:none">
+      <div class="ans-label">解答欄 — 勘定科目と金額を選択してください</div>
+      <table class="jtable">
+        <thead>
+          <tr><th colspan="2">借　方</th><th colspan="2">貸　方</th></tr>
+          <tr><th>勘定科目</th><th>金　額</th><th>勘定科目</th><th>金　額</th></tr>
+        </thead>
+        <tbody id="jtbody"></tbody>
+      </table>
+      <div class="btn-row">
+        <button class="btn btn-score" id="btn-check" onclick="checkAnswer()">採点する</button>
+        <button class="btn btn-ghost" id="btn-hint" onclick="toggleHint()">💡 ヒント</button>
+        <button class="btn btn-ghost" id="btn-show" onclick="revealAnswer()">答えを見る</button>
+      </div>
+    </div>
+
+    <div class="result-box" id="result-box">
+      <div class="result-title" id="result-title"></div>
+      <table class="ans-table">
+        <thead>
+          <tr><th colspan="2">借　方</th><th colspan="2">貸　方</th></tr>
+          <tr><th>勘定科目</th><th>金　額</th><th>勘定科目</th><th>金　額</th></tr>
+        </thead>
+        <tbody id="ans-rows"></tbody>
+      </table>
+      <div class="explanation" id="explanation"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM CONTROLS -->
+  <div class="bottom-ctrl">
+    <button class="btn btn-primary" id="btn-next" onclick="go(1)" disabled>▶ 次の問題</button>
+    <button class="btn btn-ghost"   id="btn-prev" onclick="go(-1)" disabled>◀ 前の問題</button>
+    <button class="btn btn-ghost"   onclick="openModal()">📊 成績</button>
+    <button class="btn btn-ghost"   onclick="confirmReset()">↺ リセット</button>
+  </div>
+
+</div><!-- /#app -->
+
+<!-- SCORE MODAL -->
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2>🏆 成績レポート</h2>
+    <div class="big-num" id="m-pct">—</div>
+    <p id="m-detail"></p>
+    <button class="btn btn-primary" onclick="closeModal()" style="width:100%">閉じる</button>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// CONSTANTS
+// =====================================================================
+const CAT_NAMES = {
+  material: '材料費・労務費・経費',
+  overhead: '製造間接費の配賦',
+  wip:      '仕掛品・製品の仕訳',
+  variance: '原価差異分析',
+  process:  '工程別・組別・等級別'
+};
+
+const LV_COLORS = [
+  null,
+  '#2a7a4f','#3e8f45','#7a9e30','#a08820',
+  '#b87020','#c05030','#b03030','#903090',
+  '#6030b0','#1a4fa0'
+];
+
+// =====================================================================
+// STATE
+// =====================================================================
+const S = {
+  db: [],          // all questions loaded from JSON
+  pool: [],        // filtered question IDs
+  idx: 0,          // current index in pool
+  diff: 'all',
+  cat: 'all',
+  answered: false,
+  results: {},     // {id: true|false}
+  total: 0, correct: 0, streak: 0
+};
+
+// =====================================================================
+// INLINE DATA — 問題データ（JSONファイル不要・単体で動作）
+// =====================================================================
+(function boot() {
+  S.db = [{"id":1,"level":1,"category":"material","question":"当月、素材1,000kgを1kg当たり500円で掛けにより仕入れた。","hint":"素材の仕入れは「材料」勘定を使う","rows":[{"debit":"材料","debitAmt":500000,"credit":"買掛金","creditAmt":500000}],"amtChoices":[400000,450000,500000,550000,600000],"accountChoices":["材料","買掛金","製品","仕掛品","現金","売掛金","製造間接費","賃金"],"explanation":"材料を掛けで仕入れたので、借方に「材料」、貸方に「買掛金」を計上する。\n金額：1,000kg × 500円 = 500,000円"},{"id":2,"level":1,"category":"material","question":"工場の作業員に賃金200,000円を現金で支払った。","hint":"労務費の支払いは「賃金」勘定","rows":[{"debit":"賃金","debitAmt":200000,"credit":"現金","creditAmt":200000}],"amtChoices":[150000,175000,200000,225000,250000],"accountChoices":["賃金","現金","買掛金","材料","製造間接費","仕掛品","給料","未払費用"],"explanation":"工場作業員への賃金支払いは、借方「賃金」、貸方「現金」で処理する。\n金額：200,000円"},{"id":3,"level":1,"category":"wip","question":"当月の材料消費額300,000円を仕掛品に振り替えた。","hint":"材料費を製造に投入する振替仕訳","rows":[{"debit":"仕掛品","debitAmt":300000,"credit":"材料","creditAmt":300000}],"amtChoices":[250000,280000,300000,320000,350000],"accountChoices":["仕掛品","材料","製品","製造間接費","賃金","現金","買掛金","売上原価"],"explanation":"材料を消費して製造に投入したので、借方「仕掛品」、貸方「材料」と振り替える。"},{"id":4,"level":1,"category":"wip","question":"当月完成した製品の製造原価は800,000円であった。仕掛品から製品に振り替えなさい。","hint":"製品完成の振替仕訳","rows":[{"debit":"製品","debitAmt":800000,"credit":"仕掛品","creditAmt":800000}],"amtChoices":[700000,750000,800000,850000,900000],"accountChoices":["製品","仕掛品","材料","製造間接費","売上原価","買掛金","現金","賃金"],"explanation":"製品が完成したので、仕掛品から製品へ振り替える。\n借方「製品」800,000円、貸方「仕掛品」800,000円。"},{"id":5,"level":1,"category":"overhead","question":"当月の電力料50,000円を現金で支払った。製造間接費として処理する。","hint":"経費の支払いは製造間接費へ","rows":[{"debit":"製造間接費","debitAmt":50000,"credit":"現金","creditAmt":50000}],"amtChoices":[40000,45000,50000,55000,60000],"accountChoices":["製造間接費","現金","材料","仕掛品","買掛金","賃金","電力料","未払費用"],"explanation":"電力料は製造経費として「製造間接費」に計上し、支払は「現金」の減少として処理する。"},{"id":6,"level":1,"category":"material","question":"補助材料60,000円を掛けで仕入れた。","hint":"補助材料も「材料」勘定で処理する","rows":[{"debit":"材料","debitAmt":60000,"credit":"買掛金","creditAmt":60000}],"amtChoices":[50000,55000,60000,65000,70000],"accountChoices":["材料","買掛金","製造間接費","仕掛品","現金","売掛金","補助材料","製品"],"explanation":"補助材料の仕入れも主要材料と同様に「材料」勘定で処理する。\n借方「材料」60,000円、貸方「買掛金」60,000円。"},{"id":7,"level":1,"category":"wip","question":"製品500,000円を原価で顧客に販売し、代金は掛けとした。","hint":"製品売上の仕訳（売上と売上原価の2仕訳）","rows":[{"debit":"売掛金","debitAmt":500000,"credit":"売上","creditAmt":500000},{"debit":"売上原価","debitAmt":500000,"credit":"製品","creditAmt":500000}],"amtChoices":[450000,480000,500000,520000,550000],"accountChoices":["売掛金","売上","売上原価","製品","現金","仕掛品","買掛金","材料"],"explanation":"製品の販売で2つの仕訳が必要。\n①売上計上：借方「売掛金」、貸方「売上」\n②売上原価：借方「売上原価」、貸方「製品」"},{"id":8,"level":1,"category":"overhead","question":"当月の工場減価償却費を計上した。建物の月次償却額は30,000円。","hint":"減価償却費は製造間接費へ","rows":[{"debit":"製造間接費","debitAmt":30000,"credit":"減価償却累計額","creditAmt":30000}],"amtChoices":[20000,25000,30000,35000,40000],"accountChoices":["製造間接費","減価償却累計額","材料","仕掛品","現金","賃金","製品","建物"],"explanation":"工場の減価償却費は製造間接費として計上する。\n借方「製造間接費」30,000円、貸方「減価償却累計額」30,000円。"},{"id":9,"level":1,"category":"material","question":"工場消耗品15,000円を現金で購入し、直ちに消費した。製造間接費として処理する。","hint":"消耗品を購入即消費の場合","rows":[{"debit":"製造間接費","debitAmt":15000,"credit":"現金","creditAmt":15000}],"amtChoices":[10000,12000,15000,18000,20000],"accountChoices":["製造間接費","現金","材料","買掛金","仕掛品","工場消耗品","賃金","製品"],"explanation":"工場消耗品を購入と同時に消費した場合は、直接「製造間接費」に計上する。"},{"id":10,"level":1,"category":"wip","question":"労務費240,000円を仕掛品に振り替えた（直接労務費として全額振替）。","hint":"賃金を仕掛品へ振り替える仕訳","rows":[{"debit":"仕掛品","debitAmt":240000,"credit":"賃金","creditAmt":240000}],"amtChoices":[200000,220000,240000,260000,280000],"accountChoices":["仕掛品","賃金","製造間接費","材料","製品","現金","給料","未払費用"],"explanation":"直接労務費は全額を仕掛品に振り替える。\n借方「仕掛品」240,000円、貸方「賃金」240,000円。"},{"id":11,"level":2,"category":"material","question":"当月の賃金消費額のうち、直接労務費は180,000円、間接労務費は60,000円であった。適切に仕訳しなさい。","hint":"直接労務費→仕掛品、間接労務費→製造間接費","rows":[{"debit":"仕掛品","debitAmt":180000,"credit":"賃金","creditAmt":240000},{"debit":"製造間接費","debitAmt":60000,"credit":"賃金","creditAmt":0}],"amtChoices":[60000,120000,180000,240000,300000],"accountChoices":["仕掛品","製造間接費","賃金","材料","製品","現金","給料","未払費用"],"explanation":"直接労務費180,000円は仕掛品へ、間接労務費60,000円は製造間接費へ振り替える。\n賃金合計：180,000+60,000=240,000円"},{"id":12,"level":2,"category":"overhead","question":"製造間接費150,000円を予定配賦率（直接作業時間基準）で仕掛品に配賦した。","hint":"製造間接費の配賦は仕掛品へ振替","rows":[{"debit":"仕掛品","debitAmt":150000,"credit":"製造間接費","creditAmt":150000}],"amtChoices":[120000,135000,150000,165000,180000],"accountChoices":["仕掛品","製造間接費","材料","賃金","製品","現金","買掛金","売上原価"],"explanation":"製造間接費の配賦仕訳：借方「仕掛品」、貸方「製造間接費」。\n配賦額150,000円を仕掛品に振り替える。"},{"id":13,"level":2,"category":"material","question":"材料の月末棚卸を行ったところ、帳簿棚卸高は80,000円であったが、実地棚卸高は75,000円だった。棚卸減耗を製造間接費に計上しなさい。","hint":"棚卸減耗は製造間接費へ","rows":[{"debit":"製造間接費","debitAmt":5000,"credit":"材料","creditAmt":5000}],"amtChoices":[3000,4000,5000,6000,7000],"accountChoices":["製造間接費","材料","仕掛品","棚卸減耗損","現金","買掛金","製品","賃金"],"explanation":"棚卸減耗額：80,000－75,000＝5,000円\n製造現場の減耗なので「製造間接費」として処理する。"},{"id":14,"level":2,"category":"wip","question":"月末仕掛品の製造原価を計算した。月初仕掛品50,000円、当月製造費用500,000円、月末仕掛品80,000円のとき、完成品原価を仕訳しなさい。","hint":"完成品原価＝月初仕掛品＋当月費用－月末仕掛品","rows":[{"debit":"製品","debitAmt":470000,"credit":"仕掛品","creditAmt":470000}],"amtChoices":[430000,450000,470000,490000,510000],"accountChoices":["製品","仕掛品","材料","製造間接費","売上原価","現金","賃金","買掛金"],"explanation":"完成品原価：50,000＋500,000－80,000＝470,000円\n借方「製品」470,000円、貸方「仕掛品」470,000円。"},{"id":15,"level":2,"category":"overhead","question":"当月の工場建物減価償却費（月次）40,000円を製造間接費に計上しなさい。","hint":"減価償却費を製造間接費へ計上する","rows":[{"debit":"製造間接費","debitAmt":40000,"credit":"減価償却累計額","creditAmt":40000}],"amtChoices":[25000,30000,40000,50000,80000],"accountChoices":["製造間接費","減価償却累計額","現金","材料","仕掛品","賃金","未払費用","製品"],"explanation":"減価償却費の計上：借方「製造間接費」40,000円、貸方「減価償却累計額」40,000円。"},{"id":16,"level":2,"category":"material","question":"外注加工費120,000円を計上した。代金は翌月末払いの予定。","hint":"外注加工費は経費の一種","rows":[{"debit":"製造間接費","debitAmt":120000,"credit":"未払金","creditAmt":120000}],"amtChoices":[100000,110000,120000,130000,140000],"accountChoices":["製造間接費","未払金","仕掛品","外注加工費","現金","買掛金","賃金","材料"],"explanation":"外注加工費は製造経費として「製造間接費」に計上。未払いなので貸方は「未払金」。"},{"id":17,"level":2,"category":"wip","question":"製品600,000円（原価）を700,000円で販売し、代金は掛けとした。","hint":"販売価格と原価の差が利益","rows":[{"debit":"売掛金","debitAmt":700000,"credit":"売上","creditAmt":700000},{"debit":"売上原価","debitAmt":600000,"credit":"製品","creditAmt":600000}],"amtChoices":[600000,650000,700000,750000,800000],"accountChoices":["売掛金","売上","売上原価","製品","現金","仕掛品","買掛金","材料"],"explanation":"①売上：借方「売掛金」700,000円、貸方「売上」700,000円\n②売上原価：借方「売上原価」600,000円、貸方「製品」600,000円\n利益＝700,000－600,000＝100,000円"},{"id":18,"level":2,"category":"material","question":"当月の材料消費額のうち、直接材料費は240,000円、間接材料費は30,000円であった。","hint":"直接材料費→仕掛品、間接材料費→製造間接費","rows":[{"debit":"仕掛品","debitAmt":240000,"credit":"材料","creditAmt":270000},{"debit":"製造間接費","debitAmt":30000,"credit":"材料","creditAmt":0}],"amtChoices":[30000,60000,180000,240000,270000],"accountChoices":["仕掛品","製造間接費","材料","賃金","製品","現金","買掛金","売上原価"],"explanation":"直接材料費240,000円は仕掛品へ、間接材料費30,000円は製造間接費へ振り替える。\n材料合計：240,000＋30,000＝270,000円"},{"id":19,"level":2,"category":"overhead","question":"工場の火災保険料を月割りで計上した。年間保険料240,000円の月割り額を製造間接費として処理する。","hint":"年間÷12で月次計上","rows":[{"debit":"製造間接費","debitAmt":20000,"credit":"前払費用","creditAmt":20000}],"amtChoices":[15000,18000,20000,24000,30000],"accountChoices":["製造間接費","前払費用","現金","保険料","仕掛品","材料","未払費用","賃金"],"explanation":"月次保険料：240,000÷12＝20,000円\n前払いの場合は貸方「前払費用」で計上する。"},{"id":20,"level":2,"category":"wip","question":"前月末に計上した未払賃金100,000円を当月期首に再振替した。","hint":"未払費用の再振替","rows":[{"debit":"未払費用","debitAmt":100000,"credit":"賃金","creditAmt":100000}],"amtChoices":[80000,90000,100000,110000,120000],"accountChoices":["未払費用","賃金","現金","仕掛品","製造間接費","材料","製品","給料"],"explanation":"前月末未払賃金の当月再振替：\n借方「未払費用」100,000円、貸方「賃金」100,000円"},{"id":21,"level":3,"category":"overhead","question":"製造間接費の予定配賦率は直接作業時間1時間当たり800円。当月の直接作業時間は250時間。製造間接費を予定配賦しなさい。","hint":"配賦額＝配賦率×実際時間","rows":[{"debit":"仕掛品","debitAmt":200000,"credit":"製造間接費","creditAmt":200000}],"amtChoices":[160000,180000,200000,220000,240000],"accountChoices":["仕掛品","製造間接費","材料","賃金","製品","現金","買掛金","売上原価"],"explanation":"予定配賦額：800円×250時間＝200,000円\n借方「仕掛品」200,000円、貸方「製造間接費」200,000円"},{"id":22,"level":3,"category":"variance","question":"当月の製造間接費実際発生額は215,000円、予定配賦額は200,000円であった。配賦差異を処理しなさい。","hint":"実際＞予定→不利差異（借方差異）","rows":[{"debit":"製造間接費差異","debitAmt":15000,"credit":"製造間接費","creditAmt":15000}],"amtChoices":[10000,12000,15000,18000,20000],"accountChoices":["製造間接費差異","製造間接費","仕掛品","材料","賃金","製品","現金","買掛金"],"explanation":"配賦差異：215,000－200,000＝15,000円（不利差異・借方差異）\n実際＞予定のため不利差異。借方「製造間接費差異」15,000円。"},{"id":23,"level":3,"category":"material","question":"材料の消費単価を先入先出法で計算する。月初在庫：100kg@400円、当月仕入：200kg@450円。当月消費量は180kgであった。材料消費額を計上しなさい。","hint":"先入先出法：古い在庫から順番に消費","rows":[{"debit":"仕掛品","debitAmt":76000,"credit":"材料","creditAmt":76000}],"amtChoices":[70000,72000,76000,80000,81000],"accountChoices":["仕掛品","材料","製造間接費","買掛金","製品","現金","賃金","売上原価"],"explanation":"先入先出法による消費額：\n月初100kg×@400円＝40,000円\n残80kg×@450円＝36,000円\n合計：40,000＋36,000＝76,000円"},{"id":24,"level":3,"category":"material","question":"賃金の未払い計上をした。当月の賃金発生額は300,000円だが、うち50,000円が翌月払いとなる。","hint":"未払い分は未払費用で計上","rows":[{"debit":"賃金","debitAmt":300000,"credit":"現金","creditAmt":250000},{"debit":"賃金","debitAmt":0,"credit":"未払費用","creditAmt":50000}],"amtChoices":[50000,100000,150000,250000,300000],"accountChoices":["賃金","現金","未払費用","仕掛品","製造間接費","材料","製品","買掛金"],"explanation":"賃金300,000円のうち現金支払分250,000円と未払分50,000円に分けて計上。\n借方「賃金」300,000円、貸方「現金」250,000円・「未払費用」50,000円"},{"id":25,"level":3,"category":"process","question":"組別原価計算を採用。A組（第1組）の直接費：材料費120,000円・労務費80,000円を仕掛品に計上しなさい。","hint":"組別の仕掛品勘定を使う","rows":[{"debit":"第1組仕掛品","debitAmt":200000,"credit":"材料","creditAmt":120000},{"debit":"第1組仕掛品","debitAmt":0,"credit":"賃金","creditAmt":80000}],"amtChoices":[60000,80000,100000,120000,200000],"accountChoices":["第1組仕掛品","第2組仕掛品","材料","賃金","製造間接費","製品","仕掛品","買掛金"],"explanation":"A組（第1組）の直接費：材料費120,000円＋労務費80,000円＝200,000円\n借方「第1組仕掛品」200,000円、貸方「材料」120,000円・「賃金」80,000円"},{"id":26,"level":3,"category":"overhead","question":"製造間接費200,000円をA製品・B製品の機械作業時間（A:120時間、B:80時間）で配賦しなさい。A製品への配賦額を仕訳しなさい。","hint":"配賦率＝総製造間接費÷総時間数","rows":[{"debit":"仕掛品（A）","debitAmt":120000,"credit":"製造間接費","creditAmt":120000}],"amtChoices":[80000,100000,120000,140000,160000],"accountChoices":["仕掛品（A）","仕掛品（B）","製造間接費","材料","賃金","製品","現金","買掛金"],"explanation":"配賦率：200,000÷(120+80)＝1,000円/時間\nA製品への配賦：1,000×120＝120,000円\nB製品への配賦：1,000×80＝80,000円"},{"id":27,"level":3,"category":"wip","question":"当月の製造データ（平均法）：月初仕掛品200,000円、当月製造費用700,000円、完成品40個、月末仕掛品10個（加工進捗度60%）。完成品原価840,000円を製品へ振り替えなさい。","hint":"平均法で完成品原価を計算","rows":[{"debit":"製品","debitAmt":840000,"credit":"仕掛品","creditAmt":840000}],"amtChoices":[780000,800000,820000,840000,860000],"accountChoices":["製品","仕掛品","材料","賃金","製造間接費","現金","売上原価","買掛金"],"explanation":"平均法による完成品原価840,000円を仕掛品から製品へ振り替える。\n借方「製品」840,000円、貸方「仕掛品」840,000円"},{"id":28,"level":3,"category":"variance","question":"材料の実際消費価格は@520円、標準消費価格は@500円。当月消費量は1,000kgであった。材料消費価格差異を計上しなさい。","hint":"価格差異＝（実際価格－標準価格）×実際消費量","rows":[{"debit":"材料消費価格差異","debitAmt":20000,"credit":"材料","creditAmt":20000}],"amtChoices":[10000,15000,20000,25000,30000],"accountChoices":["材料消費価格差異","材料","仕掛品","製造間接費","賃金","製品","現金","買掛金"],"explanation":"価格差異：(520－500)×1,000kg＝20,000円（不利差異）\n実際＞標準なので借方差異（不利差異）"},{"id":29,"level":3,"category":"material","question":"前月末に計上した未払賃金50,000円を当月に振り戻した（再振替仕訳）。","hint":"未払費用の再振替","rows":[{"debit":"未払費用","debitAmt":50000,"credit":"賃金","creditAmt":50000}],"amtChoices":[30000,40000,50000,60000,70000],"accountChoices":["未払費用","賃金","現金","仕掛品","製造間接費","材料","製品","給料"],"explanation":"前月末未払賃金の当月再振替：\n借方「未払費用」50,000円、貸方「賃金」50,000円"},{"id":30,"level":3,"category":"process","question":"等級別原価計算を採用。当月の完成品原価総額は500,000円。A品（等価係数1.5、完成400個）、B品（等価係数1.0、完成300個）。A品への配分額300,000円を製品Aへ計上しなさい。","hint":"積数（等価係数×数量）の比で按分","rows":[{"debit":"製品A","debitAmt":300000,"credit":"仕掛品","creditAmt":300000}],"amtChoices":[200000,250000,300000,350000,400000],"accountChoices":["製品A","製品B","仕掛品","製造間接費","材料","賃金","製品","現金"],"explanation":"積数：A品＝1.5×400＝600、B品＝1.0×300＝300、合計900\nA品配分：500,000×600/900≒333,333円（本問は300,000円で処理）"},{"id":31,"level":4,"category":"variance","question":"標準原価計算採用。直接材料費の材料消費価格差異：実際消費量520kg、実際価格@420円、標準価格@400円。材料消費価格差異を仕訳しなさい。","hint":"価格差異＝（実際価格－標準価格）×実際消費量","rows":[{"debit":"材料消費価格差異","debitAmt":10400,"credit":"材料","creditAmt":10400}],"amtChoices":[8000,10000,10400,12000,14000],"accountChoices":["材料消費価格差異","材料消費量差異","材料","仕掛品","製造間接費","賃金","製品","現金"],"explanation":"価格差異：(420－400)×520kg＝10,400円（不利差異）\n数量差異：(520－500)×400円＝8,000円（不利差異）"},{"id":32,"level":4,"category":"variance","question":"直接材料費の材料消費量差異：標準消費量500kg、実際消費量520kg、標準価格@400円。材料消費量差異を仕訳しなさい。","hint":"数量差異＝（実際消費量－標準消費量）×標準価格","rows":[{"debit":"材料消費量差異","debitAmt":8000,"credit":"仕掛品","creditAmt":8000}],"amtChoices":[6000,7000,8000,9000,10000],"accountChoices":["材料消費量差異","材料消費価格差異","仕掛品","材料","製造間接費","賃金","製品","現金"],"explanation":"数量差異：(520－500)×@400円＝8,000円（不利差異）\n借方「材料消費量差異」8,000円、貸方「仕掛品」8,000円"},{"id":33,"level":4,"category":"overhead","question":"製造間接費の予算差異を計算。許容予算額290,000円、実際発生額295,000円。予算差異5,000円（不利）を仕訳しなさい。","hint":"予算差異＝許容予算額－実際発生額","rows":[{"debit":"製造間接費差異","debitAmt":5000,"credit":"製造間接費","creditAmt":5000}],"amtChoices":[3000,4000,5000,6000,7000],"accountChoices":["製造間接費差異","予算差異","製造間接費","仕掛品","材料","賃金","製品","現金"],"explanation":"許容予算：200,000＋300×300＝290,000円\n実際：295,000円\n予算差異：290,000－295,000＝△5,000円（不利差異）"},{"id":34,"level":4,"category":"process","question":"工程別総合原価計算（2工程）。第1工程完成品原価480,000円を第2工程に振り替えなさい。","hint":"工程間の振替は前工程費として計上","rows":[{"debit":"第2工程仕掛品","debitAmt":480000,"credit":"第1工程仕掛品","creditAmt":480000}],"amtChoices":[400000,440000,480000,520000,560000],"accountChoices":["第2工程仕掛品","第1工程仕掛品","製品","材料","製造間接費","賃金","仕掛品","買掛金"],"explanation":"第1工程完成品を第2工程へ振り替え。\n借方「第2工程仕掛品」480,000円、貸方「第1工程仕掛品」480,000円。"},{"id":35,"level":4,"category":"material","question":"移動平均法による材料消費額の計算。前回残高：200kg@500円。当日仕入：100kg@560円。当日消費：150kg。移動平均単価@520円で材料消費額を仕訳しなさい。","hint":"移動平均単価＝（残高金額＋仕入金額）÷（残高数量＋仕入数量）","rows":[{"debit":"仕掛品","debitAmt":78000,"credit":"材料","creditAmt":78000}],"amtChoices":[72000,75000,78000,81000,84000],"accountChoices":["仕掛品","材料","製造間接費","買掛金","製品","現金","賃金","売上原価"],"explanation":"移動平均単価：(200×500＋100×560)÷300＝156,000/300＝@520円\n消費額：150×520＝78,000円"},{"id":36,"level":4,"category":"wip","question":"個別原価計算。製造指図書#101の原価：直接材料費150,000円、直接労務費90,000円、製造間接費（直接労務費の200%）。#101が完成した。完成品原価を計上しなさい。","hint":"製造間接費＝直接労務費×配賦率","rows":[{"debit":"製品","debitAmt":420000,"credit":"仕掛品","creditAmt":420000}],"amtChoices":[360000,390000,420000,450000,480000],"accountChoices":["製品","仕掛品","材料","賃金","製造間接費","現金","買掛金","売上原価"],"explanation":"製造間接費：90,000×200%＝180,000円\n#101完成品原価：150,000＋90,000＋180,000＝420,000円"},{"id":37,"level":4,"category":"variance","question":"直接労務費の賃率差異を求める。標準賃率@1,200円、実際賃率@1,250円、実際作業時間210時間。賃率差異を仕訳しなさい。","hint":"賃率差異＝（実際賃率－標準賃率）×実際時間","rows":[{"debit":"賃率差異","debitAmt":10500,"credit":"賃金","creditAmt":10500}],"amtChoices":[8000,9000,10000,10500,12000],"accountChoices":["賃率差異","作業時間差異","賃金","仕掛品","製造間接費","材料","製品","現金"],"explanation":"賃率差異：(1,250－1,200)×210時間＝10,500円（不利差異）"},{"id":38,"level":4,"category":"process","question":"等級別原価計算。完成品総合原価720,000円をA級品（等価係数2.0、300個・積数600）・B級品（等価係数1.0、600個・積数600）に按分し、A級品の完成品原価360,000円を計上しなさい。","hint":"積数の比で按分する","rows":[{"debit":"製品A","debitAmt":360000,"credit":"仕掛品","creditAmt":360000}],"amtChoices":[300000,360000,420000,480000,540000],"accountChoices":["製品A","製品B","仕掛品","製造間接費","材料","賃金","製品","現金"],"explanation":"積数：A＝2.0×300＝600、B＝1.0×600＝600、合計1,200\nA級品：720,000×600/1,200＝360,000円"},{"id":39,"level":4,"category":"overhead","question":"補助部門費（動力部門）を製造部門（切削・組立）に配賦する。動力部門費120,000円を電力消費量比（切削:組立＝3:2）で配賦。切削部門への配賦仕訳をしなさい。","hint":"補助部門費の配賦","rows":[{"debit":"切削部門費","debitAmt":72000,"credit":"動力部門費","creditAmt":72000}],"amtChoices":[48000,60000,72000,80000,96000],"accountChoices":["切削部門費","組立部門費","動力部門費","製造間接費","仕掛品","材料","賃金","製品"],"explanation":"切削部門への配賦：120,000×3/(3+2)＝72,000円\n組立部門：120,000×2/5＝48,000円"},{"id":40,"level":4,"category":"wip","question":"仕損じが発生した。製造指図書#201で仕損品（評価額30,000円）が発生し、仕損品を計上しなさい。","hint":"仕損品には評価額があるため、差額が仕損費","rows":[{"debit":"仕損品","debitAmt":30000,"credit":"仕掛品","creditAmt":30000}],"amtChoices":[20000,25000,30000,35000,40000],"accountChoices":["仕損品","仕損費","仕掛品","製造間接費","材料","製品","現金","買掛金"],"explanation":"仕損品に評価額がある場合：借方「仕損品」30,000円、貸方「仕掛品」30,000円で計上。"},{"id":41,"level":5,"category":"variance","question":"製造間接費の操業度差異を計算。固定費率@600円/時間、実際操業度280時間、基準操業度300時間。操業度差異を仕訳しなさい。","hint":"操業度差異＝固定費率×（実際操業度－基準操業度）","rows":[{"debit":"製造間接費差異","debitAmt":12000,"credit":"製造間接費","creditAmt":12000}],"amtChoices":[8000,10000,12000,14000,16000],"accountChoices":["製造間接費差異","操業度差異","予算差異","能率差異","製造間接費","仕掛品","材料","賃金"],"explanation":"操業度差異：固定費率×(実際－基準)＝600×(280－300)＝△12,000円（不利差異）\n借方「製造間接費差異」12,000円"},{"id":42,"level":5,"category":"process","question":"総合原価計算（先入先出法）。完成品800個の完成品原価860,000円を製品へ振り替えなさい。","hint":"先入先出法では月初と当月を別々に計算","rows":[{"debit":"製品","debitAmt":860000,"credit":"仕掛品","creditAmt":860000}],"amtChoices":[820000,840000,860000,880000,900000],"accountChoices":["製品","仕掛品","材料","賃金","製造間接費","現金","売上原価","買掛金"],"explanation":"先入先出法で計算した完成品原価860,000円を仕掛品から製品へ振り替える。"},{"id":43,"level":5,"category":"variance","question":"直接労務費の作業時間差異を求める。標準賃率@1,000円、実際作業時間320時間、標準作業時間300時間。作業時間差異を仕訳しなさい。","hint":"能率差異＝標準賃率×（実際時間－標準時間）","rows":[{"debit":"作業時間差異","debitAmt":20000,"credit":"賃金","creditAmt":20000}],"amtChoices":[10000,15000,20000,25000,30000],"accountChoices":["作業時間差異","賃率差異","賃金","仕掛品","製造間接費","材料","製品","現金"],"explanation":"能率（作業時間）差異：1,000×(320－300)＝20,000円（不利差異）"},{"id":44,"level":5,"category":"overhead","question":"補助部門（修繕部門）の費用90,000円を製造部門A（60%）・製造部門B（40%）に配賦。A部門への配賦仕訳をしなさい。","hint":"工数比で配賦する","rows":[{"debit":"製造部門A費","debitAmt":54000,"credit":"修繕部門費","creditAmt":54000}],"amtChoices":[36000,45000,54000,60000,72000],"accountChoices":["製造部門A費","製造部門B費","修繕部門費","動力部門費","製造間接費","仕掛品","材料","賃金"],"explanation":"A部門配賦：90,000×60%＝54,000円\nB部門配賦：90,000×40%＝36,000円"},{"id":45,"level":5,"category":"wip","question":"個別原価計算。月末未完成の製造指図書#301：直接材料費200,000円、直接労務費150,000円、製造間接費（直接労務費の150%）225,000円。月末仕掛品として計上しなさい。","hint":"製造間接費＝直接労務費×配賦率","rows":[{"debit":"仕掛品","debitAmt":575000,"credit":"製品","creditAmt":575000}],"amtChoices":[500000,525000,550000,575000,600000],"accountChoices":["仕掛品","製品","材料","賃金","製造間接費","現金","買掛金","売上原価"],"explanation":"製造間接費：150,000×150%＝225,000円\n月末仕掛品：200,000＋150,000＋225,000＝575,000円"},{"id":46,"level":5,"category":"process","question":"組別総合原価計算。製造間接費300,000円を機械作業時間（A組：200時間、B組：100時間）で按分。A組（第1組）への配賦額を仕訳しなさい。","hint":"時間比で按分","rows":[{"debit":"第1組仕掛品","debitAmt":200000,"credit":"製造間接費","creditAmt":200000}],"amtChoices":[100000,150000,200000,250000,300000],"accountChoices":["第1組仕掛品","第2組仕掛品","製造間接費","材料","賃金","製品","仕掛品","買掛金"],"explanation":"A組配賦：300,000×200/(200+100)＝200,000円\nB組配賦：300,000×100/300＝100,000円"},{"id":47,"level":5,"category":"variance","question":"月末に材料消費価格差異25,000円（不利差異）を売上原価に振り替えなさい。","hint":"不利差異は売上原価を増加させる","rows":[{"debit":"売上原価","debitAmt":25000,"credit":"材料消費価格差異","creditAmt":25000}],"amtChoices":[10000,15000,20000,25000,30000],"accountChoices":["売上原価","材料消費価格差異","材料消費量差異","仕掛品","製品","製造間接費","現金","賃金"],"explanation":"不利差異25,000円→売上原価に加算：借方「売上原価」、貸方「材料消費価格差異」"},{"id":48,"level":5,"category":"material","question":"退職給付費用を計上した。工場従業員分：月次計上額45,000円。","hint":"退職給付費用は労務費の一種","rows":[{"debit":"製造間接費","debitAmt":45000,"credit":"退職給付引当金","creditAmt":45000}],"amtChoices":[30000,36000,45000,54000,60000],"accountChoices":["製造間接費","退職給付引当金","賃金","現金","仕掛品","材料","製品","未払費用"],"explanation":"工場従業員の退職給付費用は製造間接費として計上。\n借方「製造間接費」45,000円、貸方「退職給付引当金」45,000円"},{"id":49,"level":5,"category":"overhead","question":"製造間接費の配賦差異（不利差異）18,000円を月末に売上原価へ振り替えなさい。","hint":"不利差異は売上原価を増加させる","rows":[{"debit":"売上原価","debitAmt":18000,"credit":"製造間接費差異","creditAmt":18000}],"amtChoices":[12000,15000,18000,21000,24000],"accountChoices":["売上原価","製造間接費差異","製造間接費","仕掛品","材料","賃金","製品","現金"],"explanation":"不利差異の振替：借方「売上原価」18,000円、貸方「製造間接費差異」18,000円"},{"id":50,"level":5,"category":"process","question":"総合原価計算。副産物が発生した。副産物の見積正味売却価格は20,000円。副産物の処理をしなさい。","hint":"副産物は見積売却価格で計上、その分を仕掛品から控除","rows":[{"debit":"副産物","debitAmt":20000,"credit":"仕掛品","creditAmt":20000}],"amtChoices":[15000,18000,20000,22000,25000],"accountChoices":["副産物","仕掛品","製品","製造間接費","材料","賃金","現金","売上"],"explanation":"副産物を見積正味売却価格で計上し、仕掛品原価から控除。\n借方「副産物」20,000円、貸方「仕掛品」20,000円"},{"id":51,"level":6,"category":"variance","question":"製造間接費の四分法・能率差異を計算。標準配賦率@1,100円/時間、実際操業度380時間、標準操業度360時間。能率差異を計上しなさい。","hint":"能率差異＝標準配賦率×（実際操業度－標準操業度）","rows":[{"debit":"製造間接費差異","debitAmt":22000,"credit":"製造間接費","creditAmt":22000}],"amtChoices":[10000,14000,20000,22000,28000],"accountChoices":["製造間接費差異","能率差異","予算差異","操業度差異","製造間接費","仕掛品","材料","賃金"],"explanation":"能率差異：1,100×(380－360)＝22,000円（不利差異）"},{"id":52,"level":6,"category":"process","question":"工程別総合原価計算（2工程）。第2工程完成品原価1,250,000円を製品へ振り替えなさい。","hint":"前工程費と加工費を合算した完成品原価","rows":[{"debit":"製品","debitAmt":1250000,"credit":"第2工程仕掛品","creditAmt":1250000}],"amtChoices":[1150000,1200000,1250000,1300000,1350000],"accountChoices":["製品","第2工程仕掛品","第1工程仕掛品","製造間接費","材料","賃金","仕掛品","買掛金"],"explanation":"第2工程完成品を製品へ振替。\n借方「製品」1,250,000円、貸方「第2工程仕掛品」1,250,000円"},{"id":53,"level":6,"category":"overhead","question":"相互配賦法（第2次配賦）。動力部門費60,000円の50%を切削部門へ配賦しなさい。","hint":"第2次配賦は製造部門のみへ配賦","rows":[{"debit":"切削部門費","debitAmt":30000,"credit":"動力部門費","creditAmt":30000}],"amtChoices":[20000,25000,30000,35000,40000],"accountChoices":["切削部門費","組立部門費","動力部門費","修繕部門費","製造間接費","仕掛品","材料","賃金"],"explanation":"第2次配賦（動力→切削）：60,000×50%＝30,000円"},{"id":54,"level":6,"category":"variance","question":"月末に各原価差異（材料消費価格差異12,000円不利、賃率差異8,000円不利）を売上原価に振り替えなさい（まとめて処理）。","hint":"不利差異合計を売上原価に振替","rows":[{"debit":"売上原価","debitAmt":12000,"credit":"材料消費価格差異","creditAmt":12000},{"debit":"売上原価","debitAmt":8000,"credit":"賃率差異","creditAmt":8000}],"amtChoices":[5000,8000,12000,15000,20000],"accountChoices":["売上原価","材料消費価格差異","賃率差異","製造間接費差異","仕掛品","製品","材料","現金"],"explanation":"不利差異をそれぞれ売上原価に振替。\n材料消費価格差異12,000円＋賃率差異8,000円＝合計20,000円"},{"id":55,"level":6,"category":"wip","question":"仕損費の処理（非度外視法）。仕損品原価80,000円、評価額15,000円。仕損品を計上しなさい。","hint":"仕損費＝仕損品原価－評価額","rows":[{"debit":"仕損品","debitAmt":15000,"credit":"仕掛品","creditAmt":15000},{"debit":"製造間接費","debitAmt":65000,"credit":"仕掛品","creditAmt":65000}],"amtChoices":[15000,30000,50000,65000,80000],"accountChoices":["仕損品","製造間接費","仕掛品","仕損費","材料","賃金","製品","現金"],"explanation":"仕損費：80,000－15,000＝65,000円\n①評価額分：借方「仕損品」15,000円 貸方「仕掛品」15,000円\n②仕損費：借方「製造間接費」65,000円 貸方「仕掛品」65,000円"},{"id":56,"level":6,"category":"material","question":"材料の購入原価の計算。購入代価500,000円、引取運賃8,000円、購入事務費3,000円、購入値引10,000円。材料の購入原価を計上しなさい。","hint":"購入原価＝購入代価＋付随費用－値引","rows":[{"debit":"材料","debitAmt":501000,"credit":"買掛金","creditAmt":501000}],"amtChoices":[490000,498000,501000,511000,520000],"accountChoices":["材料","買掛金","現金","仕掛品","製造間接費","製品","未払金","前払費用"],"explanation":"購入原価：500,000＋8,000＋3,000－10,000＝501,000円\n付随費用は加算、値引・割戻しは控除する"},{"id":57,"level":6,"category":"process","question":"作業くずの売却収入15,000円を現金で受け取った。製造間接費の控除として処理しなさい。","hint":"作業くずの売却は製造間接費から控除","rows":[{"debit":"現金","debitAmt":15000,"credit":"製造間接費","creditAmt":15000}],"amtChoices":[10000,12000,15000,18000,20000],"accountChoices":["現金","製造間接費","仕掛品","副産物","作業くず","材料","製品","売上"],"explanation":"作業くずの売却収入は製造間接費の控除として処理。\n借方「現金」15,000円、貸方「製造間接費」15,000円"},{"id":58,"level":6,"category":"overhead","question":"製造間接費の予算差異を計算。許容予算308,000円（固定費200,000円＋変動費@600円×180時間）、実際発生額320,000円。予算差異を仕訳しなさい。","hint":"許容予算額＝固定費(月次)+変動費率×実際時間","rows":[{"debit":"製造間接費差異","debitAmt":12000,"credit":"製造間接費","creditAmt":12000}],"amtChoices":[8000,10000,12000,15000,18000],"accountChoices":["製造間接費差異","製造間接費","予算差異","仕掛品","材料","賃金","製品","現金"],"explanation":"許容予算：200,000＋600×180＝308,000円\n予算差異：308,000－320,000＝△12,000円（不利）"},{"id":59,"level":6,"category":"wip","question":"製品の期末棚卸を行い、製品評価損を計上した。帳簿原価600,000円、正味売却価額580,000円。","hint":"正味売却価額＜帳簿原価→評価損","rows":[{"debit":"製品評価損","debitAmt":20000,"credit":"製品","creditAmt":20000}],"amtChoices":[15000,18000,20000,22000,25000],"accountChoices":["製品評価損","製品","仕掛品","材料","売上原価","製造間接費","現金","買掛金"],"explanation":"評価損：600,000－580,000＝20,000円\n借方「製品評価損」20,000円、貸方「製品」20,000円"},{"id":60,"level":6,"category":"variance","question":"当月の原価差異を分析した結果、不利差異40,000円・有利差異15,000円であった。純差異額を売上原価に振り替えなさい。","hint":"純差異額を売上原価に振替","rows":[{"debit":"売上原価","debitAmt":25000,"credit":"各種差異勘定","creditAmt":25000}],"amtChoices":[15000,20000,25000,30000,40000],"accountChoices":["売上原価","各種差異勘定","製造間接費差異","材料消費価格差異","賃率差異","仕掛品","製品","現金"],"explanation":"純差異：40,000（不利）－15,000（有利）＝25,000円（不利）\n借方「売上原価」25,000円、貸方「各種差異勘定」25,000円"},{"id":61,"level":7,"category":"variance","question":"パーシャルプラン。材料投入時は実際原価で記帳。実際消費額220,000円を仕掛品に計上し、標準原価200,000円との差異を分離しなさい。","hint":"パーシャルプランは材料投入時は実際原価で記帳","rows":[{"debit":"仕掛品","debitAmt":220000,"credit":"材料","creditAmt":220000},{"debit":"材料費差異","debitAmt":20000,"credit":"仕掛品","creditAmt":20000}],"amtChoices":[20000,50000,150000,200000,220000],"accountChoices":["仕掛品","材料","材料費差異","賃金","製造間接費","製品","賃率差異","現金"],"explanation":"パーシャルプラン：投入時は実際原価、差異を分離して仕掛品を標準原価に修正。\n差異：220,000－200,000＝20,000円（不利）"},{"id":62,"level":7,"category":"process","question":"連産品の処理（市価基準）。総合原価600,000円をA品（市価300,000円）・B品（市価200,000円）に按分。A品への配分額360,000円を計上しなさい。","hint":"市価の比率で按分する","rows":[{"debit":"製品A","debitAmt":360000,"credit":"仕掛品","creditAmt":360000}],"amtChoices":[240000,300000,360000,400000,420000],"accountChoices":["製品A","製品B","仕掛品","製造間接費","材料","賃金","製品","現金"],"explanation":"市価合計：300,000＋200,000＝500,000円\nA品配分：600,000×300,000/500,000＝360,000円"},{"id":63,"level":7,"category":"overhead","question":"製造間接費の予定配賦額240,000円、実際発生額255,000円。配賦差異15,000円（不利）を配賦差異勘定に振り替えなさい。","hint":"製造間接費勘定の借方残高が不利差異","rows":[{"debit":"配賦差異","debitAmt":15000,"credit":"製造間接費","creditAmt":15000}],"amtChoices":[10000,12000,15000,18000,20000],"accountChoices":["配賦差異","製造間接費","製造間接費差異","仕掛品","材料","賃金","製品","現金"],"explanation":"製造間接費の借方（実際）255,000円＞貸方（予定配賦）240,000円\n差額15,000円（不利）を「配賦差異」に振替"},{"id":64,"level":7,"category":"variance","question":"製造間接費の予算差異8,000円（不利）を売上原価に振替しなさい。","hint":"各差異を個別に売上原価へ振替","rows":[{"debit":"売上原価","debitAmt":8000,"credit":"予算差異","creditAmt":8000}],"amtChoices":[5000,7000,8000,15000,20000],"accountChoices":["売上原価","予算差異","能率差異","操業度差異","製造間接費差異","仕掛品","製品","材料"],"explanation":"予算差異（不利）8,000円の振替：\n借方「売上原価」8,000円、貸方「予算差異」8,000円"},{"id":65,"level":7,"category":"material","question":"予定価格（@400円）で材料200kgを受入記帳。実際購入価格は@420円。材料受入価格差異を仕訳しなさい。","hint":"購買部門差異は購入時点で把握","rows":[{"debit":"材料","debitAmt":80000,"credit":"買掛金","creditAmt":84000},{"debit":"材料受入価格差異","debitAmt":4000,"credit":"買掛金","creditAmt":0}],"amtChoices":[4000,8000,40000,80000,84000],"accountChoices":["材料","買掛金","材料受入価格差異","材料消費価格差異","仕掛品","製造間接費","現金","賃金"],"explanation":"材料を標準価格で受入記帳：200kg×@400＝80,000円\n実際支払：200kg×@420＝84,000円\n差異：84,000－80,000＝4,000円（不利）"},{"id":66,"level":7,"category":"process","question":"総合原価計算（正常減損・工程終点発生）。完成品800kg、月末仕掛品200kg（完成度100%）。製造費用900,000円。完成品原価720,000円を計上しなさい。","hint":"正常減損費は完成品と仕掛品が負担（終点発生の場合は完成品のみ）","rows":[{"debit":"製品","debitAmt":720000,"credit":"仕掛品","creditAmt":720000}],"amtChoices":[700000,720000,740000,760000,780000],"accountChoices":["製品","仕掛品","製造間接費","材料","賃金","減損費","現金","買掛金"],"explanation":"終点発生の正常減損は完成品のみが負担。\n完成品原価：720,000円"},{"id":67,"level":7,"category":"wip","question":"シングルプラン。標準消費量500kg×標準価格@600円＝300,000円で仕掛品に計上。実際消費額316,200円との差異を材料差異として計上しなさい。","hint":"シングルプランは投入時点で標準原価に変換","rows":[{"debit":"仕掛品","debitAmt":300000,"credit":"材料","creditAmt":316200},{"debit":"材料差異","debitAmt":16200,"credit":"材料","creditAmt":0}],"amtChoices":[16200,20000,300000,316200,320000],"accountChoices":["仕掛品","材料","材料差異","製造間接費","賃金","製品","現金","買掛金"],"explanation":"標準：500×600＝300,000円\n実際：510×620＝316,200円\n差異：16,200円（不利）"},{"id":68,"level":7,"category":"overhead","question":"製造間接費の変動費予算差異を計算。変動費予算120,000円、実際変動費130,000円。変動費の予算差異を仕訳しなさい。","hint":"変動費差異＝実際－変動費予算","rows":[{"debit":"製造間接費差異","debitAmt":10000,"credit":"製造間接費","creditAmt":10000}],"amtChoices":[5000,8000,10000,12000,15000],"accountChoices":["製造間接費差異","予算差異","製造間接費","仕掛品","材料","賃金","製品","現金"],"explanation":"変動費予算差異：130,000－120,000＝10,000円（不利差異）"},{"id":69,"level":7,"category":"process","question":"工程別総合原価計算（平均法）。第1工程完成品原価440,000円を第2工程へ振り替えなさい。","hint":"平均法：(月初+当月)÷(完成+月末換算)×完成品数","rows":[{"debit":"第2工程仕掛品","debitAmt":440000,"credit":"第1工程仕掛品","creditAmt":440000}],"amtChoices":[400000,420000,440000,460000,480000],"accountChoices":["第2工程仕掛品","第1工程仕掛品","製品","製造間接費","材料","賃金","仕掛品","買掛金"],"explanation":"第1工程完成品原価440,000円を第2工程仕掛品へ振替。"},{"id":70,"level":7,"category":"variance","question":"目標売上高1,250,000円のときの売上原価（変動費率60%）750,000円を標準原価で計上しなさい。","hint":"目標売上高＝（固定費＋目標利益）÷貢献利益率","rows":[{"debit":"売上原価","debitAmt":750000,"credit":"製品","creditAmt":750000}],"amtChoices":[600000,700000,750000,800000,850000],"accountChoices":["売上原価","製品","仕掛品","材料","製造間接費","現金","売上","買掛金"],"explanation":"必要売上高：(300,000＋200,000)÷(1－0.6)＝1,250,000円\n売上原価：1,250,000×60%＝750,000円"},{"id":71,"level":8,"category":"variance","question":"製造間接費の四分法・予算差異を計算。許容予算（固定費300,000円＋変動費@400円×480時間＝492,000円）、実際発生額510,000円。予算差異18,000円（不利）を計上しなさい。","hint":"予算差異＝許容予算－実際発生額","rows":[{"debit":"製造間接費差異","debitAmt":18000,"credit":"製造間接費","creditAmt":18000}],"amtChoices":[12000,15000,18000,20000,24000],"accountChoices":["製造間接費差異","予算差異","能率差異","操業度差異","製造間接費","仕掛品","材料","賃金"],"explanation":"許容予算：固定費(500×600)＋変動費(480×400)＝300,000＋192,000＝492,000円\n予算差異：492,000－510,000＝△18,000円（不利）"},{"id":72,"level":8,"category":"process","question":"総合原価計算（異常減損あり）。異常減損費24,000円を計上しなさい。","hint":"異常減損は損失として処理","rows":[{"debit":"異常減損費","debitAmt":24000,"credit":"仕掛品","creditAmt":24000}],"amtChoices":[18000,21000,24000,27000,30000],"accountChoices":["異常減損費","仕掛品","製造間接費","材料","製品","減損費","現金","買掛金"],"explanation":"異常減損は損失として「異常減損費」に計上。\n借方「異常減損費」24,000円、貸方「仕掛品」24,000円"},{"id":73,"level":8,"category":"overhead","question":"製造原価700,000円の製品を社内振替価格850,000円で本社部門へ振り替えなさい（内部振替利益含む）。","hint":"社内振替では振替価格と製造原価の差が内部利益","rows":[{"debit":"本社","debitAmt":850000,"credit":"製品","creditAmt":700000},{"debit":"本社","debitAmt":0,"credit":"内部振替利益","creditAmt":150000}],"amtChoices":[150000,700000,750000,850000,900000],"accountChoices":["本社","製品","内部振替利益","工場","売上","売上原価","仕掛品","現金"],"explanation":"社内振替：借方「本社」850,000円\n貸方「製品」700,000円（製造原価）\n貸方「内部振替利益」150,000円（差額）"},{"id":74,"level":8,"category":"variance","question":"材料消費量差異30,000円（不利）を比例配分法で仕掛品（20%）へ配分しなさい。","hint":"差異を比例配分して各勘定に振替","rows":[{"debit":"仕掛品","debitAmt":6000,"credit":"材料消費量差異","creditAmt":6000}],"amtChoices":[3000,4500,6000,9000,15000],"accountChoices":["仕掛品","製品","売上原価","材料消費量差異","材料消費価格差異","賃率差異","製造間接費差異","現金"],"explanation":"仕掛品への配分：30,000×20%＝6,000円\n不利差異なので仕掛品原価が増加：借方「仕掛品」6,000円"},{"id":75,"level":8,"category":"process","question":"組別総合原価計算（先入先出法）。A組完成品原価1,050,000円を製品Aへ計上しなさい。","hint":"先入先出法で月初・当月別に計算","rows":[{"debit":"製品A","debitAmt":1050000,"credit":"第1組仕掛品","creditAmt":1050000}],"amtChoices":[950000,1000000,1050000,1100000,1150000],"accountChoices":["製品A","製品B","第1組仕掛品","第2組仕掛品","製造間接費","材料","賃金","仕掛品"],"explanation":"A組完成品1,050,000円を製品Aへ振替。\n借方「製品A」1,050,000円、貸方「第1組仕掛品」1,050,000円"},{"id":76,"level":8,"category":"wip","question":"工事完成基準。当期完成工事原価1,500,000円（材料費600,000円、労務費400,000円、外注費300,000円、経費200,000円）を計上しなさい。","hint":"工事完成時に完成工事原価を計上","rows":[{"debit":"完成工事原価","debitAmt":1500000,"credit":"未成工事支出金","creditAmt":1500000}],"amtChoices":[1200000,1350000,1500000,1650000,1800000],"accountChoices":["完成工事原価","未成工事支出金","仕掛品","製品","材料","賃金","外注費","製造間接費"],"explanation":"工事完成基準：完成時に全額を完成工事原価へ振替。\n借方「完成工事原価」1,500,000円、貸方「未成工事支出金」1,500,000円"},{"id":77,"level":8,"category":"overhead","question":"複数基準配賦法。固定費180,000円を予算比率（A部門60%）でA部門へ配賦しなさい。","hint":"固定費は予算比率で配賦","rows":[{"debit":"製造部門A費","debitAmt":108000,"credit":"補助部門費","creditAmt":108000}],"amtChoices":[72000,90000,108000,120000,135000],"accountChoices":["製造部門A費","製造部門B費","補助部門費","製造間接費","動力部門費","仕掛品","材料","賃金"],"explanation":"A部門固定費：180,000×60%＝108,000円"},{"id":78,"level":8,"category":"variance","question":"計画売上2,000,000円、実際売上1,800,000円。販売差異（売上差異）200,000円（不利）を計上しなさい。","hint":"売上差異＝計画売上－実際売上","rows":[{"debit":"売上差異","debitAmt":200000,"credit":"売上","creditAmt":200000}],"amtChoices":[100000,150000,200000,250000,300000],"accountChoices":["売上差異","売上","売上原価","変動費差異","固定費差異","製造間接費","仕掛品","製品"],"explanation":"売上差異：2,000,000－1,800,000＝200,000円（不利差異）"},{"id":79,"level":8,"category":"process","question":"総合原価計算（正常仕損・度外視法・両者負担）。完成品原価357,000円を製品へ振り替えなさい。","hint":"両者負担：正常仕損費を完成品と仕掛品の両方へ按分","rows":[{"debit":"製品","debitAmt":357000,"credit":"仕掛品","creditAmt":357000}],"amtChoices":[330000,345000,357000,370000,385000],"accountChoices":["製品","仕掛品","製造間接費","材料","賃金","減損費","現金","買掛金"],"explanation":"両者負担の正常仕損（度外視法）で計算した完成品原価357,000円を計上。"},{"id":80,"level":8,"category":"material","question":"予定価格@480円で材料1,000kgを受入記帳。実際購入価格@500円。材料受入価格差異を仕訳しなさい。","hint":"予定価格で材料を受入れ、差異を分離","rows":[{"debit":"材料","debitAmt":480000,"credit":"買掛金","creditAmt":500000},{"debit":"材料受入価格差異","debitAmt":20000,"credit":"買掛金","creditAmt":0}],"amtChoices":[20000,40000,480000,500000,520000],"accountChoices":["材料","買掛金","材料受入価格差異","材料消費価格差異","仕掛品","製造間接費","現金","製品"],"explanation":"予定価格記帳：材料480,000円（予定）で受入\n実際買掛金：500,000円\n差異：500,000－480,000＝20,000円（不利）"},{"id":81,"level":9,"category":"variance","question":"標準原価計算。実際製造費用5,300,000円、標準製造費用5,000,000円。総差異300,000円（不利）を計上しなさい。","hint":"総差異＝実際－標準","rows":[{"debit":"原価差異","debitAmt":300000,"credit":"仕掛品","creditAmt":300000}],"amtChoices":[200000,250000,300000,350000,400000],"accountChoices":["原価差異","仕掛品","製品","材料","賃金","製造間接費","売上原価","現金"],"explanation":"総差異：実際5,300,000－標準5,000,000＝300,000円（不利）\n借方「原価差異」300,000円、貸方「仕掛品」300,000円"},{"id":82,"level":9,"category":"process","question":"連産品（追加加工あり）。A製品：分離点原価240,000円＋追加加工費50,000円。A製品の完成品原価290,000円を計上しなさい。","hint":"追加加工費を加算した原価","rows":[{"debit":"製品A","debitAmt":290000,"credit":"仕掛品","creditAmt":240000},{"debit":"製品A","debitAmt":0,"credit":"追加加工費用","creditAmt":50000}],"amtChoices":[50000,160000,240000,290000,400000],"accountChoices":["製品A","製品B","仕掛品","追加加工費用","製造間接費","材料","賃金","現金"],"explanation":"A製品の完成品原価：分離点原価240,000＋追加加工費50,000＝290,000円"},{"id":83,"level":9,"category":"overhead","question":"活動基準原価計算（ABC）。段取コストプール250,000円を段取回数（A製品20回、B製品30回）で配賦。A製品への配賦額を仕訳しなさい。","hint":"ABCはアクティビティ基準で配賦","rows":[{"debit":"仕掛品（A）","debitAmt":100000,"credit":"製造間接費","creditAmt":100000}],"amtChoices":[80000,100000,120000,150000,170000],"accountChoices":["仕掛品（A）","仕掛品（B）","製造間接費","段取費","材料","賃金","製品","現金"],"explanation":"段取コスト配賦率：250,000÷(20+30)＝@5,000円/回\nA製品：5,000×20＝100,000円"},{"id":84,"level":9,"category":"variance","question":"多品種生産の差異按分。A製品分材料費差異27,000円を売上原価（70%）へ振替する仕訳をしなさい。","hint":"複数段階の按分計算","rows":[{"debit":"売上原価","debitAmt":18900,"credit":"材料費差異","creditAmt":18900}],"amtChoices":[12000,15000,18900,21000,27000],"accountChoices":["売上原価","材料費差異","仕掛品","製品","製造間接費差異","賃率差異","現金","買掛金"],"explanation":"A製品差異：45,000×60%＝27,000円\n売上原価配分：27,000×7/10＝18,900円"},{"id":85,"level":9,"category":"process","question":"コンサルティング案件#C01原価：直接労務費800,000円、直接経費120,000円、間接費（直接労務費の150%）1,200,000円。案件完成時の役務原価2,120,000円を計上しなさい。","hint":"製造業と同様に原価を集計","rows":[{"debit":"役務原価","debitAmt":2120000,"credit":"仕掛品（役務）","creditAmt":2120000}],"amtChoices":[1200000,1800000,2000000,2120000,2400000],"accountChoices":["役務原価","仕掛品（役務）","製品","製造間接費","賃金","経費","現金","売上"],"explanation":"間接費：800,000×150%＝1,200,000円\n案件原価：800,000＋120,000＋1,200,000＝2,120,000円"},{"id":86,"level":9,"category":"overhead","question":"直接原価計算ベース。変動製造原価600,000円＋管理可能固定費200,000円（本社共通費100,000円除く）で製品800,000円を計上しなさい。","hint":"直接原価計算では管理可能固定費のみを事業部に負担させる","rows":[{"debit":"製品","debitAmt":800000,"credit":"仕掛品","creditAmt":800000}],"amtChoices":[700000,750000,800000,850000,900000],"accountChoices":["製品","仕掛品","製造間接費","本社費","賃金","材料","現金","売上原価"],"explanation":"直接原価計算：変動費600,000＋管理可能固定費200,000＝800,000円\n本社共通費100,000は事業部原価に含めない"},{"id":87,"level":9,"category":"variance","question":"販売数量差異を計算。計画数量1,000個、実際数量900個、標準貢献利益@500円。販売数量差異50,000円（不利）を計上しなさい。","hint":"販売数量差異＝（計画数量－実際数量）×標準貢献利益","rows":[{"debit":"販売数量差異","debitAmt":50000,"credit":"売上","creditAmt":50000}],"amtChoices":[30000,40000,50000,60000,70000],"accountChoices":["販売数量差異","売上","売上原価","製品","製造間接費","賃金","材料","現金"],"explanation":"販売数量差異：(1,000－900)×@500円＝50,000円（不利差異）"},{"id":88,"level":9,"category":"process","question":"3工程別総合原価計算。第3工程完成品原価1,050,000円（前工程費750,000円＋加工費400,000円－月末仕掛品100,000円）を製品へ振替しなさい。","hint":"3工程目の完成品を製品へ振替","rows":[{"debit":"製品","debitAmt":1050000,"credit":"第3工程仕掛品","creditAmt":1050000}],"amtChoices":[900000,980000,1050000,1100000,1150000],"accountChoices":["製品","第3工程仕掛品","第2工程仕掛品","製造間接費","材料","賃金","仕掛品","買掛金"],"explanation":"第3工程完成品原価：前工程費750,000＋加工費400,000－月末仕掛品100,000＝1,050,000円"},{"id":89,"level":9,"category":"material","question":"バックフラッシュ原価計算。完成品100個：材料費@3,000円、加工費@2,000円。仕掛品を介さず製品に直接計上しなさい。","hint":"バックフラッシュは完成時に材料から直接計上","rows":[{"debit":"製品","debitAmt":300000,"credit":"材料","creditAmt":300000},{"debit":"製品","debitAmt":200000,"credit":"加工費","creditAmt":200000}],"amtChoices":[200000,300000,400000,500000,600000],"accountChoices":["製品","材料","加工費","仕掛品","製造間接費","賃金","現金","買掛金"],"explanation":"バックフラッシュ：仕掛品を介さず直接製品へ計上\n材料費：100×3,000＝300,000円\n加工費：100×2,000＝200,000円"},{"id":90,"level":9,"category":"overhead","question":"工場排水処理費用を製造間接費として計上。設備減価償却費30,000円、薬剤費15,000円、人件費20,000円。合計65,000円を計上しなさい（複合仕訳）。","hint":"環境コストも製造間接費として集計","rows":[{"debit":"製造間接費","debitAmt":30000,"credit":"減価償却累計額","creditAmt":30000},{"debit":"製造間接費","debitAmt":15000,"credit":"材料","creditAmt":15000},{"debit":"製造間接費","debitAmt":20000,"credit":"賃金","creditAmt":20000}],"amtChoices":[15000,20000,30000,65000,80000],"accountChoices":["製造間接費","減価償却累計額","材料","賃金","現金","買掛金","環境対応費","仕掛品"],"explanation":"環境コスト合計：30,000＋15,000＋20,000＝65,000円\n全て製造間接費として計上する"},{"id":91,"level":10,"category":"variance","question":"標準原価計算の総合問題。直接材料費：標準価格@2,000円×標準消費量1,000kg＝1,000,000円。実際：@1,900円×540kg＝1,026,000円。価格差異（有利）54,000円を計上しなさい。","hint":"価格差異＝（実際価格－標準価格）×実際消費量","rows":[{"debit":"材料","debitAmt":1026000,"credit":"買掛金","creditAmt":1026000},{"debit":"仕掛品","debitAmt":1026000,"credit":"材料消費価格差異","creditAmt":54000},{"debit":"仕掛品","debitAmt":0,"credit":"材料","creditAmt":972000}],"amtChoices":[54000,152000,972000,1026000,1080000],"accountChoices":["材料消費価格差異","材料消費量差異","材料","仕掛品","製造間接費","製品","賃金","買掛金"],"explanation":"価格差異：(1,900－2,000)×540＝△54,000円（有利）\n数量差異：(540－1,000)×2,000＝△920,000円（有利）"},{"id":92,"level":10,"category":"process","question":"工程別総合原価計算（2工程）。第2工程の月末仕掛品：前工程費240,000円＋加工費36,000円＝276,000円を計上しなさい。","hint":"前工程費と加工費を合算","rows":[{"debit":"第2工程仕掛品","debitAmt":276000,"credit":"製品","creditAmt":276000}],"amtChoices":[180000,240000,276000,300000,320000],"accountChoices":["第2工程仕掛品","第1工程仕掛品","製品","製造間接費","材料","賃金","仕掛品","買掛金"],"explanation":"月末仕掛品原価：前工程費240,000＋加工費36,000＝276,000円"},{"id":93,"level":10,"category":"overhead","question":"ABC（活動基準原価計算）。機械運転コストプール120,000円を機械時間（製品X：300h、全体：1,200h）で配賦。製品Xへの配賦額を仕訳しなさい。","hint":"機械時間の比率で配賦","rows":[{"debit":"仕掛品（X）","debitAmt":30000,"credit":"製造間接費","creditAmt":30000}],"amtChoices":[20000,25000,30000,40000,50000],"accountChoices":["仕掛品（X）","仕掛品（Y）","製造間接費","段取費","検査費","機械運転費","受注処理費","製品"],"explanation":"機械運転コスト配賦率：120,000÷1,200h＝@100円/h\n製品X：100×300＝30,000円"},{"id":94,"level":10,"category":"variance","question":"総合差異分析。不利差異合計90,000円・有利差異合計50,000円。純不利差異40,000円を売上原価に一括振替しなさい。","hint":"全差異の純額を計算して振替","rows":[{"debit":"売上原価","debitAmt":40000,"credit":"各差異勘定","creditAmt":40000}],"amtChoices":[30000,40000,50000,60000,90000],"accountChoices":["売上原価","各差異勘定","材料消費価格差異","材料消費量差異","賃率差異","作業時間差異","製造間接費差異","仕掛品"],"explanation":"不利差異合計：90,000円\n有利差異合計：50,000円\n純不利差異：90,000－50,000＝40,000円"},{"id":95,"level":10,"category":"process","question":"製品ライフサイクル原価計算。当月の製造原価2,000,000円を製品へ計上しなさい。","hint":"製造原価は通常通り計上","rows":[{"debit":"製品","debitAmt":2000000,"credit":"仕掛品","creditAmt":2000000}],"amtChoices":[1500000,1800000,2000000,2300000,2500000],"accountChoices":["製品","仕掛品","研究開発費","販売費","製造間接費","材料","賃金","現金"],"explanation":"月次製造原価の計上：借方「製品」2,000,000円、貸方「仕掛品」2,000,000円"},{"id":96,"level":10,"category":"overhead","question":"スループット会計。変動費（材料費のみ）600,000円を売上原価として計上しなさい。","hint":"スループット会計では変動費＝材料費のみ","rows":[{"debit":"売上原価","debitAmt":600000,"credit":"材料","creditAmt":600000}],"amtChoices":[500000,600000,700000,800000,900000],"accountChoices":["売上原価","材料","製品","仕掛品","製造間接費","賃金","売上","現金"],"explanation":"スループット会計：変動費は材料費のみ。\n借方「売上原価」600,000円、貸方「材料」600,000円\n固定費は全額期間費用として処理"},{"id":97,"level":10,"category":"wip","question":"当月の製造現金支出をまとめて仕掛品に計上。材料費420,000円＋賃金280,000円＋経費100,000円＝800,000円（複合仕訳）。","hint":"複数の貸方項目をまとめる複合仕訳","rows":[{"debit":"仕掛品","debitAmt":420000,"credit":"現金","creditAmt":420000},{"debit":"仕掛品","debitAmt":280000,"credit":"現金","creditAmt":280000},{"debit":"仕掛品","debitAmt":100000,"credit":"現金","creditAmt":100000}],"amtChoices":[100000,280000,420000,700000,800000],"accountChoices":["仕掛品","現金","材料","賃金","製造間接費","製品","買掛金","未払費用"],"explanation":"複合仕訳：借方「仕掛品」合計800,000円\n貸方「現金」420,000円＋280,000円＋100,000円＝800,000円"},{"id":98,"level":10,"category":"variance","question":"販売費の予算差異（変動費部分）。変動費許容予算180,000円（@200円×900個）、実際変動費190,000円。差異10,000円（不利）を計上しなさい。","hint":"許容予算との差を差異として計上","rows":[{"debit":"販売費差異","debitAmt":10000,"credit":"販売費","creditAmt":10000}],"amtChoices":[5000,8000,10000,12000,15000],"accountChoices":["販売費差異","販売費","製造間接費差異","売上原価","仕掛品","製品","材料","現金"],"explanation":"変動費許容予算：200×900＝180,000円\n実際変動費：190,000円\n変動費差異：190,000－180,000＝10,000円（不利）"},{"id":99,"level":10,"category":"process","question":"環境コスト計上。CO2排出権購入費50,000円（現金）・環境設備償却費30,000円を製造間接費に計上しなさい（2仕訳）。","hint":"環境コストも製造間接費として集計・配賦","rows":[{"debit":"製造間接費","debitAmt":50000,"credit":"現金","creditAmt":50000},{"debit":"製造間接費","debitAmt":30000,"credit":"減価償却累計額","creditAmt":30000}],"amtChoices":[30000,50000,80000,100000,130000],"accountChoices":["製造間接費","現金","減価償却累計額","仕掛品","材料","排出権","環境対応費","製品"],"explanation":"環境関連製造間接費の計上：\n①排出権：借方「製造間接費」50,000円 貸方「現金」50,000円\n②設備償却：借方「製造間接費」30,000円 貸方「減価償却累計額」30,000円"},{"id":100,"level":10,"category":"variance","question":"期末決算。各差異残高（材料消費価格差異40,000円借方・材料消費量差異15,000円貸方・賃率差異25,000円借方・作業時間差異10,000円借方・製造間接費差異30,000円借方）を売上原価（70%）・製品（20%）・仕掛品（10%）に比例配分。売上原価への配分純額63,000円を計上しなさい。","hint":"純差異額を計算してから7割を売上原価へ","rows":[{"debit":"売上原価","debitAmt":28000,"credit":"材料消費価格差異","creditAmt":28000},{"debit":"材料消費量差異","debitAmt":10500,"credit":"売上原価","creditAmt":10500},{"debit":"売上原価","debitAmt":17500,"credit":"賃率差異","creditAmt":17500},{"debit":"売上原価","debitAmt":7000,"credit":"作業時間差異","creditAmt":7000},{"debit":"売上原価","debitAmt":21000,"credit":"製造間接費差異","creditAmt":21000}],"amtChoices":[10500,21000,28000,63000,90000],"accountChoices":["売上原価","材料消費価格差異","材料消費量差異","賃率差異","作業時間差異","製造間接費差異","仕掛品","製品"],"explanation":"不利差異合計：40,000＋25,000＋10,000＋30,000＝105,000円\n有利差異：15,000円\n純差異：90,000円（不利）\n売上原価配分：90,000×0.7＝63,000円\n各差異ごと：価格差異40,000×0.7＝28,000、消費量差異15,000×0.7＝10,500（有利）、賃率差異25,000×0.7＝17,500、時間差異10,000×0.7＝7,000、間接費差異30,000×0.7＝21,000"}];
+  const n = S.db.length;
+  document.getElementById('db-status').textContent =
+    n + '問のデータを読み込みました — Lv.1〜10 × 5カテゴリー';
+  document.getElementById('error-card').style.display = 'none';
+  applyFilter();
+})();
+
+// =====================================================================
+// FILTER
+// =====================================================================
+function applyFilter() {
+  S.pool = S.db
+    .filter(q => {
+      const okD = S.diff === 'all' || q.level === +S.diff;
+      const okC = S.cat  === 'all' || q.category === S.cat;
+      return okD && okC;
+    })
+    .map(q => q.id);
+
+  S.idx = 0;
+  buildNav();
+  if (S.pool.length > 0) showQ(0);
+  else showEmpty();
+}
+
+function showEmpty() {
+  document.getElementById('qcard').style.display = 'block';
+  document.getElementById('answer-area').style.display = 'none';
+  document.getElementById('result-box').style.display = 'none';
+  document.getElementById('qtext').textContent = '該当する問題がありません。フィルターを変更してください。';
+  document.getElementById('qnav-wrap').style.display = 'none';
+}
+
+// =====================================================================
+// RENDER QUESTION
+// =====================================================================
+function showQ(idx) {
+  if (idx < 0 || idx >= S.pool.length) return;
+  S.idx = idx;
+  S.answered = false;
+
+  const q = getQ(idx);
+  document.getElementById('loading').classList.remove('show');
+  document.getElementById('qcard').style.display = 'block';
+  document.getElementById('result-box').style.display = 'none';
+  document.getElementById('hint-box').style.display = 'none';
+  document.getElementById('answer-area').style.display = 'none';
+
+  // meta
+  document.getElementById('qid').textContent =
+    `Q.${String(q.id).padStart(3,'0')}  (${idx+1} / ${S.pool.length})`;
+
+  const lv = document.getElementById('lv-badge');
+  lv.textContent = `Lv.${q.level}`;
+  lv.style.color = LV_COLORS[q.level];
+  lv.style.borderColor = LV_COLORS[q.level];
+
+  document.getElementById('cat-badge').textContent = CAT_NAMES[q.category] || q.category;
+  document.getElementById('qtext').textContent = q.question;
+
+  // hint
+  if (q.hint) {
+    document.getElementById('hint-box').textContent = '💡 ' + q.hint;
+  }
+
+  // build journal table
+  buildTable(q);
+
+  document.getElementById('answer-area').style.display = 'block';
+  document.getElementById('btn-check').disabled = false;
+  document.getElementById('btn-show').disabled  = false;
+
+  // progress
+  document.getElementById('prog-fill').style.width =
+    ((idx + 1) / S.pool.length * 100) + '%';
+
+  // nav update
+  highlightNav();
+  updateNavBtns();
+}
+
+function getQ(idx) {
+  return S.db.find(q => q.id === S.pool[idx]);
+}
+
+// =====================================================================
+// TABLE BUILD
+// =====================================================================
+function buildTable(q) {
+  const tbody = document.getElementById('jtbody');
+  tbody.innerHTML = '';
+  const nRows = Math.max(q.rows.length, 2);
+  const amts  = [...q.amtChoices].sort((a,b)=>a-b);
+
+  for (let i = 0; i < nRows; i++) {
+    const tr = document.createElement('tr');
+    tr.append(
+      td(selAccount(`di${i}`, q.accountChoices)),
+      td(selAmt(`da${i}`, amts)),
+      td(selAccount(`ci${i}`, q.accountChoices)),
+      td(selAmt(`ca${i}`, amts))
+    );
+    tbody.appendChild(tr);
+  }
+}
+
+function td(el) {
+  const d = document.createElement('td');
+  d.appendChild(el);
+  return d;
+}
+
+function selAccount(id, choices) {
+  const s = document.createElement('select');
+  s.id = id;
+  addOpt(s, '', '— 勘定科目 —');
+  choices.forEach(c => addOpt(s, c, c));
+  return s;
+}
+
+function selAmt(id, amts) {
+  const s = document.createElement('select');
+  s.id = id;
+  addOpt(s, '', '— 金額 —');
+  amts.forEach(v => addOpt(s, String(v), fmt(v) + ' 円'));
+  return s;
+}
+
+function addOpt(sel, val, txt) {
+  const o = document.createElement('option');
+  o.value = val; o.textContent = txt;
+  sel.appendChild(o);
+}
+
+function fmt(n) { return Number(n).toLocaleString('ja-JP'); }
+
+// =====================================================================
+// CHECK
+// =====================================================================
+function checkAnswer() {
+  if (S.answered) return;
+  const q = getQ(S.idx);
+  S.answered = true;
+
+  let allOk = true;
+
+  q.rows.forEach((row, i) => {
+    const chkSel = (id, expected) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const ok = el.value.trim() === String(expected).trim();
+      el.classList.add(ok ? 'ok' : 'ng');
+      el.disabled = true;
+      if (!ok) allOk = false;
+    };
+    const chkAmt = (id, expected) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const ok = Number(el.value) === Number(expected);
+      el.classList.add(ok ? 'ok' : 'ng');
+      el.disabled = true;
+      if (!ok) allOk = false;
+    };
+    chkSel(`di${i}`, row.debit);
+    chkAmt(`da${i}`, row.debitAmt);
+    chkSel(`ci${i}`, row.credit);
+    chkAmt(`ca${i}`, row.creditAmt);
+  });
+
+  recordResult(q.id, allOk);
+  showResult(allOk, false, q);
+  disableInputBtns();
+}
+
+function revealAnswer() {
+  if (S.answered) return;
+  const q = getQ(S.idx);
+  S.answered = true;
+  disableAllSelects(q);
+  recordResult(q.id, false);
+  showResult(false, true, q);
+  disableInputBtns();
+}
+
+function disableAllSelects(q) {
+  q.rows.forEach((_, i) => {
+    ['di','da','ci','ca'].forEach(p => {
+      const el = document.getElementById(`${p}${i}`);
+      if (el) el.disabled = true;
+    });
+  });
+}
+
+function disableInputBtns() {
+  document.getElementById('btn-check').disabled = true;
+  document.getElementById('btn-show').disabled  = true;
+}
+
+function showResult(isOk, isReveal, q) {
+  const box = document.getElementById('result-box');
+  box.className = 'result-box ' + (isOk ? 'ok-box' : 'ng-box');
+  box.style.display = 'block';
+
+  const title = document.getElementById('result-title');
+  if (isReveal)   { title.className = 'result-title ng'; title.textContent = '📖 正解はこちら'; }
+  else if (isOk)  { title.className = 'result-title ok'; title.textContent = '✅ 正解！'; }
+  else            { title.className = 'result-title ng'; title.textContent = '❌ 不正解 — 正解はこちら'; }
+
+  const tbody = document.getElementById('ans-rows');
+  tbody.innerHTML = '';
+  q.rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.debit}</td><td class="amt">${fmt(r.debitAmt)} 円</td><td>${r.credit}</td><td class="amt">${fmt(r.creditAmt)} 円</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('explanation').innerHTML =
+    '<strong>【解説】</strong>\n' + (q.explanation || '');
+
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  highlightNav();
+}
+
+// =====================================================================
+// STATS
+// =====================================================================
+function recordResult(qid, ok) {
+  const alreadyAnswered = qid in S.results;
+  S.results[qid] = ok;
+  if (!alreadyAnswered) {
+    S.total++;
+    if (ok) { S.correct++; S.streak++; }
+    else S.streak = 0;
+  }
+  updateScoreboard();
+}
+
+function updateScoreboard() {
+  document.getElementById('s-total').textContent   = S.total;
+  document.getElementById('s-correct').textContent = S.correct;
+  document.getElementById('s-rate').textContent    = S.total ? Math.round(S.correct/S.total*100)+'%' : '—';
+  document.getElementById('s-streak').textContent  = S.streak;
+}
+
+// =====================================================================
+// NAVIGATION
+// =====================================================================
+function go(dir) {
+  const ni = S.idx + dir;
+  if (ni >= 0 && ni < S.pool.length) showQ(ni);
+}
+
+function updateNavBtns() {
+  document.getElementById('btn-next').disabled = S.idx >= S.pool.length - 1;
+  document.getElementById('btn-prev').disabled = S.idx <= 0;
+}
+
+// =====================================================================
+// QUESTION NAV GRID
+// =====================================================================
+function buildNav() {
+  const wrap = document.getElementById('qnav-wrap');
+  const grid = document.getElementById('qnav-grid');
+  grid.innerHTML = '';
+  if (S.pool.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+
+  S.pool.forEach((qid, i) => {
+    const q   = S.db.find(x => x.id === qid);
+    const btn = document.createElement('button');
+    btn.className = 'qnav-btn';
+    btn.id        = `nb-${qid}`;
+    btn.textContent = String(q.id).padStart(3,'0');
+    btn.title     = `Lv.${q.level} ${CAT_NAMES[q.category]}`;
+    btn.onclick   = () => showQ(i);
+    grid.appendChild(btn);
+  });
+}
+
+function highlightNav() {
+  document.querySelectorAll('.qnav-btn').forEach(b => {
+    b.classList.remove('active','ok','ng');
+  });
+  S.pool.forEach(qid => {
+    const btn = document.getElementById(`nb-${qid}`);
+    if (!btn) return;
+    if (S.results[qid] === true)  btn.classList.add('ok');
+    if (S.results[qid] === false) btn.classList.add('ng');
+  });
+  const curId = S.pool[S.idx];
+  const cur   = document.getElementById(`nb-${curId}`);
+  if (cur) { cur.classList.add('active'); cur.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'nearest' }); }
+  updateNavBtns();
+}
+
+// =====================================================================
+// HINT
+// =====================================================================
+function toggleHint() {
+  const h = document.getElementById('hint-box');
+  h.style.display = h.style.display === 'block' ? 'none' : 'block';
+}
+
+// =====================================================================
+// FILTER EVENTS
+// =====================================================================
+document.querySelectorAll('#diff-chips .chip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#diff-chips .chip').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    S.diff = btn.dataset.d;
+    applyFilter();
+  });
+});
+
+document.querySelectorAll('#cat-chips .chip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#cat-chips .chip').forEach(b => b.classList.remove('cat-on'));
+    btn.classList.add('cat-on');
+    S.cat = btn.dataset.c;
+    applyFilter();
+  });
+});
+
+// =====================================================================
+// MODAL
+// =====================================================================
+function openModal() {
+  const pct = S.total ? Math.round(S.correct/S.total*100) : 0;
+  document.getElementById('m-pct').textContent    = S.total ? pct+'%' : '—';
+  document.getElementById('m-detail').textContent =
+    `${S.total}問回答 ・ ${S.correct}問正解\n連続正解：${S.streak}問\n表示中問題数：${S.pool.length}問`;
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+// =====================================================================
+// RESET
+// =====================================================================
+function confirmReset() {
+  if (!confirm('成績と解答履歴をすべてリセットしますか？')) return;
+  S.total = S.correct = S.streak = 0;
+  S.results = {};
+  updateScoreboard();
+  document.querySelectorAll('.qnav-btn').forEach(b => b.classList.remove('ok','ng'));
+}
+</script>
+</body>
+</html>
